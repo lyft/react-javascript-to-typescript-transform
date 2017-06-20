@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "args": [],
+            "cwd": "${workspaceRoot}",
+            "env": {
+                "NODE_ENV": "test"
+            },
+            "externalConsole": false,
+            "name": "Run Tests",
+            "outDir": "${workspaceRoot}/dist",
+            "preLaunchTask": "compile",
+            "program": "${workspaceRoot}/node_modules/.bin/jest",
+            "request": "launch",
+            "runtimeArgs": [
+
+            ],
+            "runtimeExecutable": null,
+            "sourceMaps": true,
+            "stopOnEntry": false,
+            "type": "node"
+        },
+        {
+            "name": "Attach",
+            "type": "node",
+            "request": "attach",
+            "port": 5858
+        }
+    ]
+}

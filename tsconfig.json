@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "target": "es5",
+        "declaration": true,
+        "moduleResolution": "node",
+        "module": "commonjs",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "sourceMap": true,
+        "outDir": "dist",
+        "sourceRoot": "../src"
+    },
+    "exclude": [
+        "node_modules",
+        "test"
+    ],
+    "types": [
+        "node",
+        "jest"
+    ],
+    "lib": [
+        "es2017"
+    ]
+}
