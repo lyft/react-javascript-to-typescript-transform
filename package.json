@@ -8,6 +8,7 @@
     "test": "jest",
     "coverage": "jest --coverage",
     "posttest": "npm run lint",
+    "prelint": "npm run clean",
     "lint": "tslint --type-check --project tsconfig.json --format codeFrame --exclude test/**/*.tsx",
     "prepublish": "npm run build",
     "clean": "rm -rf dist",
