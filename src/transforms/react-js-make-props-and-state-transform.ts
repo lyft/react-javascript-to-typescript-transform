@@ -222,8 +222,8 @@ export function reactJSMakePropsAndStateInterfaceTransformFactoryFactory(typeChe
                             console.warn('Bad value for propType', name, 'at', propertyAssignment.getStart());
                             return result;
                         }
-                        const typeValue = getTypeFromReactPropTypeExpression(propertyAssignment.initializer)
-                        const propertySignature = ts.createPropertySignature(name, undefined, typeValue, undefined);
+                        const typeValue = getTypeFromReactPropTypeExpression(propertyAssignment.initializer);
+                        const propertySignature = ts.createPropertySignature([], name, undefined, typeValue, undefined);
                         result.members.push(propertySignature)
                         return result;
                 }, ts.createTypeLiteralNode([]));
