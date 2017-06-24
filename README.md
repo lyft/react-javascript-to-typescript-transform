@@ -15,7 +15,7 @@ Transforms React code written in JavaScript to TypeScript.
 ## Example
 
 **input**
-```ts
+```jsx
 class MyComponent extends React.Component {
   static propTypes = {
     p: React.PropTypes.string.isRequired,
@@ -35,7 +35,7 @@ class MyComponent extends React.Component {
 ```
 
 **output**
-```ts
+```tsx
 interface IMyComponentProps {
   p: string;
   r: number | undefined;
