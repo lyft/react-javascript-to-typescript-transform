@@ -44,22 +44,6 @@ export function isReactComponent(classDeclaration: ts.ClassDeclaration, typeChec
 }
 
 /**
- * A temporary hack until ts allows creating type alias declaration nodes
- * Creates a TypeAliasDeclaration
- * @param name Name of type node
- * @param type Type node
- * @param sourceFile SourceFile for context
- */
-export function createTypeDeclarationStatement(name: string, type: ts.TypeNode, sourceFile: ts.SourceFile) {
-    const printer = ts.createPrinter()
-    const typeString = printer.printNode(ts.EmitHint.Unspecified, type, sourceFile);
-    const newSource = ts.createSourceFile('temp.ts', `type ${name} = ${typeString}`, sourceFile.languageVersion);
-
-    return newSource.statements[0];
-}
-
-
-/**
  * Determine if a ts.HeritageClause is React HeritageClause
  *
  * @example `extends React.Component<{}, void>` is a React HeritageClause

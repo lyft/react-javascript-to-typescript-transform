@@ -39,10 +39,12 @@ export function collapseIntersectionInterfacesTransformFactoryFactory(
                         .map((type: ts.TypeLiteralNode) => type.members)
                         .reduce((all, members) => ts.createNodeArray(all.concat(members)), ts.createNodeArray([]));
 
-                    return helpers.createTypeDeclarationStatement(
+                    return ts.createTypeAliasDeclaration(
+                        [],
+                        [],
                         node.name.text,
+                        [],
                         ts.createTypeLiteralNode(allMembers),
-                        sourceFile,
                     );
                 }
 
