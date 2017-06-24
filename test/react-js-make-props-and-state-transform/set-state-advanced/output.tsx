@@ -1,20 +1,6 @@
 import * as React from 'react';
 
-export default class MyComponent extends React.Component<{
-    }, {
-        foo: number;
-        bar: number;
-    } & {
-        baz: number;
-    } & {
-        something: {
-            big: number;
-            here: string;
-            of: {
-                a: number;
-            }[];
-        };
-    }> {
+export default class MyComponent extends React.Component<{}, { foo: number; bar: number; } & { baz: number; } & { something: { big: number; here: string; of: { a: number; }[]; }; }> {
     render() {
         return <button onClick={this.onclick.bind(this)}/>;
     }

@@ -18,12 +18,12 @@ Transforms React code written in JavaScript to TypeScript.
 ```jsx
 class MyComponent extends React.Component {
   static propTypes = {
-    p: React.PropTypes.string.isRequired,
-    r: React.PropTypes.number
+    prop1: React.PropTypes.string.isRequired,
+    prop2: React.PropTypes.number
   }
   constructor() {
     super();
-    this.state = { foo: 1, bar: 2 };
+    this.state = { foo: 1, bar: 'str' };
   }
   render() {
     return <div>{this.state.foo}, {this.state.bar}, {this.state.baz}</div>
@@ -36,18 +36,18 @@ class MyComponent extends React.Component {
 
 **output**
 ```tsx
-interface IMyComponentProps {
-  p: string;
-  r: number | undefined;
+type MyComponentProps = {
+  prop1: string;
+  prop2: number | undefined;
 }
 
-interface IMyComponentState {
+type MyComponentState = {
   foo: number;
   bar: string;
   baz: number | undefined;
 }
 
-class MyComponent extends React.Component<IMyComponentProps, IMyComponentState> {
+class MyComponent extends React.Component<MyComponentProps, MyComponentState> {
   constructor() {
     super();
     this.state = { foo: 1, bar: 'str' };

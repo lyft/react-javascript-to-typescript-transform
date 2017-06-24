@@ -4,11 +4,11 @@ export default class MyComponent extends React.Component<{
         any: any | undefined;
         array: any[] | undefined;
         bool: boolean | undefined;
-        func: (...args: any[]) => any | undefined;
+        func: ((...args: any[]) => any) | undefined;
         number: number | undefined;
         object: object | undefined;
         string: string | undefined;
-        node: number | string | JSX.Element | undefined;
+        node: (number | string | JSX.Element) | undefined;
         element: JSX.Element | undefined;
         anyRequired: any;
         arrayRequired: any[];

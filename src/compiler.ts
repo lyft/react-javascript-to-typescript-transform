@@ -28,8 +28,10 @@ export function compile(filePath: string, factoryFactories: TransformFactoryFact
         ======================= Diagnostics for ${filePath} =======================
         `));
         for (const diag of result.diagnostics) {
-            const pos = diag.file.getLineAndCharacterOfPosition(diag.start);
-            console.log(`(${pos.line}, ${pos.character}) ${diag.messageText}`)
+            if (diag.file && diag.start) {
+                const pos = diag.file.getLineAndCharacterOfPosition(diag.start);
+                console.log(`(${pos.line}, ${pos.character}) ${diag.messageText}`)
+            }
         }
     }
 
