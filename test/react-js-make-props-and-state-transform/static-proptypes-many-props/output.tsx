@@ -8,7 +8,7 @@ export default class MyComponent extends React.Component<{
         number?: number;
         object?: object;
         string?: string;
-        node?: number | string | JSX.Element;
+        node?: React.ReactNode;
         element?: JSX.Element;
         anyRequired: any;
         arrayRequired: any[];
@@ -17,7 +17,7 @@ export default class MyComponent extends React.Component<{
         numberRequired: number;
         objectRequired: object;
         stringRequired: string;
-        nodeRequired: number | string | JSX.Element;
+        nodeRequired: React.ReactNode;
         elementRequired: JSX.Element;
     }, {}> {
     static propTypes = {

@@ -44,7 +44,7 @@ type MyComponentProps = {
 type MyComponentState = {
   foo: number;
   bar: string;
-  baz: number | undefined;
+  baz: number;
 }
 
 class MyComponent extends React.Component<MyComponentProps, MyComponentState> {

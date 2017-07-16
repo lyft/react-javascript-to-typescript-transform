@@ -271,13 +271,7 @@ export function reactJSMakePropsAndStateInterfaceTransformFactoryFactory(typeChe
                 } else if (/object/.test(text)) {
                     result = ts.createKeywordTypeNode(ts.SyntaxKind.ObjectKeyword);
                 } else if (/node/.test(text)) {
-                    result = ts.createUnionOrIntersectionTypeNode(
-                        ts.SyntaxKind.UnionType, [
-                            ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
-                            ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
-                            ts.createTypeReferenceNode('JSX.Element', [])
-                        ]
-                    )
+                    result = ts.createTypeReferenceNode('React.ReactNode', []);
                 } else if (/element/.test(text)) {
                     result = ts.createTypeReferenceNode('JSX.Element', []);
                 } else if (/func/.test(text)) {
