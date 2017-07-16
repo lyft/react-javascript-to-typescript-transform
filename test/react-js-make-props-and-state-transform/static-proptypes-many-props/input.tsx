@@ -2,6 +2,7 @@ import * as React from 'react';
 
 export default class MyComponent extends React.Component {
     static propTypes = {
+        children: React.PropTypes.node,
         any: React.PropTypes.any,
         array: React.PropTypes.array,
         bool: React.PropTypes.bool,

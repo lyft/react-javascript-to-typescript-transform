@@ -223,7 +223,18 @@ export function reactJSMakePropsAndStateInterfaceTransformFactoryFactory(typeChe
                             return result;
                         }
                         const typeValue = getTypeFromReactPropTypeExpression(propertyAssignment.initializer);
-                        const propertySignature = ts.createPropertySignature([], name, undefined, typeValue, undefined);
+
+                        // Ignore children, React types have it
+                        if (propertyAssignment.name.getText() === 'children') {
+                            return result;
+                        }
+                        const propertySignature = ts.createPropertySignature(
+                            [],
+                            name,
+                            undefined,
+                            typeValue,
+                            undefined,
+                        );
                         result.members.push(propertySignature)
                         return result;
                 }, ts.createTypeLiteralNode([]));
