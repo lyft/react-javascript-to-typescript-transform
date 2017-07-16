@@ -222,16 +222,23 @@ export function reactJSMakePropsAndStateInterfaceTransformFactoryFactory(typeChe
                             console.warn('Bad value for propType', name, 'at', propertyAssignment.getStart());
                             return result;
                         }
-                        const typeValue = getTypeFromReactPropTypeExpression(propertyAssignment.initializer);
 
                         // Ignore children, React types have it
                         if (propertyAssignment.name.getText() === 'children') {
                             return result;
                         }
+
+                        // Ignore children, React types have it
+                        if (propertyAssignment.name.getText() === 'children') {
+                            return result;
+                        }
+
+                        const typeValue = getTypeFromReactPropTypeExpression(propertyAssignment.initializer);
+                        const isOptional = isPropTypeOptional(propertyAssignment.initializer);
                         const propertySignature = ts.createPropertySignature(
                             [],
                             name,
-                            undefined,
+                            isOptional ? ts.createToken(ts.SyntaxKind.QuestionToken): undefined,
                             typeValue,
                             undefined,
                         );
@@ -291,19 +298,16 @@ export function reactJSMakePropsAndStateInterfaceTransformFactoryFactory(typeChe
                 } else {
                     result = ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
                 }
+                return result;
+            }
 
-                if (!/\.isRequired/.test(text)) {
-                    return makeTypeNodeOptional(result);
-                } else {
-                    return result;
-                }
-
-                function makeTypeNodeOptional(node: ts.TypeNode) {
-                    return ts.createUnionOrIntersectionTypeNode(ts.SyntaxKind.UnionType, [
-                        node,
-                        ts.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)
-                    ]);
-                }
+            /**
+             * Decide if node is optional
+             * @param node React propTypes member node
+             */
+            function isPropTypeOptional(node: ts.PropertyAccessExpression) {
+                const text = node.getText().replace(/React\.PropTypes\./, '');
+                return !/\.isRequired/.test(text)
             }
         };
     };

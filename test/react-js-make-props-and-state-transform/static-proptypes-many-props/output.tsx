@@ -1,15 +1,15 @@
 import * as React from 'react';
 
 export default class MyComponent extends React.Component<{
-        any: any | undefined;
-        array: any[] | undefined;
-        bool: boolean | undefined;
-        func: ((...args: any[]) => any) | undefined;
-        number: number | undefined;
-        object: object | undefined;
-        string: string | undefined;
-        node: (number | string | JSX.Element) | undefined;
-        element: JSX.Element | undefined;
+        any?: any;
+        array?: any[];
+        bool?: boolean;
+        func?: (...args: any[]) => any;
+        number?: number;
+        object?: object;
+        string?: string;
+        node?: number | string | JSX.Element;
+        element?: JSX.Element;
         anyRequired: any;
         arrayRequired: any[];
         boolRequired: boolean;

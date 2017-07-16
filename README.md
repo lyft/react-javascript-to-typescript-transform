@@ -38,7 +38,7 @@ class MyComponent extends React.Component {
 ```tsx
 type MyComponentProps = {
   prop1: string;
-  prop2: number | undefined;
+  prop2?: number;
 }
 
 type MyComponentState = {
