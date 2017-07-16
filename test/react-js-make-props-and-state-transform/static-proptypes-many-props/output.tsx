@@ -19,7 +19,7 @@ export default class MyComponent extends React.Component<{
         stringRequired: string;
         nodeRequired: number | string | JSX.Element;
         elementRequired: JSX.Element;
-    }, void> {
+    }, {}> {
     static propTypes = {
         any: React.PropTypes.any,
         array: React.PropTypes.array,

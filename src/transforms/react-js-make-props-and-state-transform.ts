@@ -106,7 +106,7 @@ export function reactJSMakePropsAndStateInterfaceTransformFactoryFactory(typeChe
                     const initialStateIsVoid = initialState.kind === ts.SyntaxKind.VoidKeyword;
                     const collectedStateTypes = getStateLookingForSetStateCalls(classDeclaration, typeChecker);
                     if (!collectedStateTypes.length && initialStateIsVoid) {
-                        return initialState;
+                        return ts.createTypeLiteralNode([]);
                     }
                     if (!initialStateIsVoid) {
                         collectedStateTypes.push(initialState)

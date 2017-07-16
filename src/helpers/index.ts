@@ -46,7 +46,7 @@ export function isReactComponent(classDeclaration: ts.ClassDeclaration, typeChec
 /**
  * Determine if a ts.HeritageClause is React HeritageClause
  *
- * @example `extends React.Component<{}, void>` is a React HeritageClause
+ * @example `extends React.Component<{}, {}>` is a React HeritageClause
  *
  * @todo: this is lazy. Use the typeChecker instead
  * @param clause
