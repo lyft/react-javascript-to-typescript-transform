@@ -14,7 +14,10 @@ export function compile(filePath: string, factoryFactories: TransformFactoryFact
     };
 
     const program = ts.createProgram([filePath], compilerOptions);
-    const sourceFiles = program.getSourceFiles().filter(sf => !sf.isDeclarationFile);
+    // `program.getSourceFiles()` will include those imported files,
+    // like: `import * as a from './file-a'`.
+    // We should only transform current file.
+    const sourceFiles = program.getSourceFiles().filter(sf => sf.fileName === filePath);
     const typeChecker = program.getTypeChecker();
 
     const result = ts.transform(

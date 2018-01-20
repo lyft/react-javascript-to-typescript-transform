@@ -1,44 +1,45 @@
 import * as React from 'react';
-export default class MyComponent extends React.Component<{
-        any?: any;
-        array?: any[];
-        bool?: boolean;
-        func?: (...args: any[]) => any;
-        number?: number;
-        object?: object;
-        string?: string;
-        node?: React.ReactNode;
-        element?: JSX.Element;
-        oneOf?: 'a' | 'b' | 'c';
-        oneOfType?: string | number;
-        arrayOf?: string[];
-        objectOf?: {
-            [key: string]: string;
-        };
-        shape?: {
-            color?: string;
-            fontSize?: number;
-        };
-        anyRequired: any;
-        arrayRequired: any[];
-        boolRequired: boolean;
-        funcRequired: (...args: any[]) => any;
-        numberRequired: number;
-        objectRequired: object;
-        stringRequired: string;
-        nodeRequired: React.ReactNode;
-        elementRequired: JSX.Element;
-        oneOfRequired: 'a' | 'b' | 'c';
-        oneOfTypeRequired: string | number;
-        arrayOfRequired: string[];
-        objectOfRequired: {
-            [key: string]: string;
-        };
-        shapeRequired: {
-            color?: string;
-            fontSize: number;
-        };
-    }, {
+type MyComponentProps = {
+    any?: any;
+    array?: any[];
+    bool?: boolean;
+    func?: (...args: any[]) => any;
+    number?: number;
+    object?: object;
+    string?: string;
+    node?: React.ReactNode;
+    element?: JSX.Element;
+    oneOf?: 'a' | 'b' | 'c';
+    oneOfType?: string | number;
+    arrayOf?: string[];
+    objectOf?: {
+        [key: string]: string;
+    };
+    shape?: {
+        color?: string;
+        fontSize?: number;
+    };
+    anyRequired: any;
+    arrayRequired: any[];
+    boolRequired: boolean;
+    funcRequired: (...args: any[]) => any;
+    numberRequired: number;
+    objectRequired: object;
+    stringRequired: string;
+    nodeRequired: React.ReactNode;
+    elementRequired: JSX.Element;
+    oneOfRequired: 'a' | 'b' | 'c';
+    oneOfTypeRequired: string | number;
+    arrayOfRequired: string[];
+    objectOfRequired: {
+        [key: string]: string;
+    };
+    shapeRequired: {
+        color?: string;
+        fontSize: number;
+    };
+};
+export default class MyComponent extends React.Component<MyComponentProps, {
     }> {
     static propTypes = {
         children: React.PropTypes.node,

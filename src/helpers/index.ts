@@ -1,6 +1,8 @@
 import * as ts from 'typescript';
 import * as _ from 'lodash';
 
+export * from './build-prop-type-interface';
+
 /**
  * If a class declaration a react class?
  * @param classDeclaration
@@ -50,10 +52,12 @@ export function isReactComponent(classDeclaration: ts.ClassDeclaration, typeChec
  * @param clause
  */
 export function isReactHeritageClause(clause: ts.HeritageClause) {
-    return clause.token === ts.SyntaxKind.ExtendsKeyword &&
+    return (
+        clause.token === ts.SyntaxKind.ExtendsKeyword &&
         clause.types.length === 1 &&
         ts.isExpressionWithTypeArguments(clause.types[0]) &&
-        /Component/.test(clause.types[0].expression.getText());
+        /Component/.test(clause.types[0].expression.getText())
+    );
 }
 
 /**
@@ -63,11 +67,13 @@ export function isReactHeritageClause(clause: ts.HeritageClause) {
  * @param statement
  */
 export function isReactPropTypeAssignmentStatement(statement: ts.Statement): statement is ts.ExpressionStatement {
-    return ts.isExpressionStatement(statement)
-        && ts.isBinaryExpression(statement.expression)
-        && statement.expression.operatorToken.kind === ts.SyntaxKind.FirstAssignment
-        && ts.isPropertyAccessExpression(statement.expression.left)
-        && /\.propTypes$|\.propTypes\..+$/.test(statement.expression.left.getText())
+    return (
+        ts.isExpressionStatement(statement) &&
+        ts.isBinaryExpression(statement.expression) &&
+        statement.expression.operatorToken.kind === ts.SyntaxKind.FirstAssignment &&
+        ts.isPropertyAccessExpression(statement.expression.left) &&
+        /\.propTypes$|\.propTypes\..+$/.test(statement.expression.left.getText())
+    );
 }
 
 /**
@@ -78,7 +84,7 @@ export function hasStaticModifier(classMember: ts.ClassElement) {
     if (!classMember.modifiers) {
         return false;
     }
-    const staticModifier = _.find(classMember.modifiers, (modifier) => {
+    const staticModifier = _.find(classMember.modifiers, modifier => {
         return modifier.kind == ts.SyntaxKind.StaticKeyword;
     });
     return staticModifier !== undefined;
@@ -91,10 +97,59 @@ export function hasStaticModifier(classMember: ts.ClassElement) {
  */
 export function isPropTypesMember(classMember: ts.ClassElement, sourceFile: ts.SourceFile) {
     try {
-         return classMember.name !== undefined && classMember.name.getFullText(sourceFile) !== 'propTypes'
+        return classMember.name !== undefined && classMember.name.getFullText(sourceFile) !== 'propTypes';
     } catch (e) {
         return false;
     }
+}
+
+/**
+ * Get component name off of a propType assignment statement
+ * @param propTypeAssignment
+ * @param sourceFile
+ */
+export function getComponentName(propTypeAssignment: ts.Statement, sourceFile: ts.SourceFile) {
+    const text = propTypeAssignment.getText(sourceFile);
+    return text.substr(0, text.indexOf('.'));
+}
+
+/**
+ * Convert react stateless function to arrow function
+ * @example
+ * Before:
+ * function Hello(message) {
+ *   return <div>{message}</div>
+ * }
+ *
+ * After:
+ * const Hello = message => {
+ *   return <div>{message}</div>
+ * }
+ */
+export function convertReactStatelessFunctionToArrowFunction(
+    statelessFunc: ts.FunctionDeclaration | ts.VariableStatement,
+) {
+    if (ts.isVariableStatement(statelessFunc)) return statelessFunc;
+
+    const funcName = statelessFunc.name || 'Component';
+    const funcBody = statelessFunc.body || ts.createBlock([]);
+
+    const initializer = ts.createArrowFunction(
+        undefined,
+        undefined,
+        statelessFunc.parameters,
+        undefined,
+        undefined,
+        funcBody,
+    );
+
+    return ts.createVariableStatement(
+        statelessFunc.modifiers,
+        ts.createVariableDeclarationList(
+            [ts.createVariableDeclaration(funcName, undefined, initializer)],
+            ts.NodeFlags.Const,
+        ),
+    );
 }
 
 /**

@@ -1,6 +1,7 @@
 import * as React from 'react';
+type MyComponentState = { foo: number; };
 export default class MyComponent extends React.Component<{
-    }, { foo: number; }> {
+    }, MyComponentState> {
     constructor(props, context) {
         super(props, context);
         this.state = { foo: 1 };

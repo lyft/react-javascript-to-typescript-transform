@@ -47,22 +47,21 @@ function visitSourceFile(sourceFile: ts.SourceFile, typeChecker: ts.TypeChecker)
     let statements = sourceFile.statements;
 
     // Look for propType assignment statements
-    const propTypeAssignments = statements.filter(
-        (statement) => helpers.isReactPropTypeAssignmentStatement(statement)
+    const propTypeAssignments = statements.filter(statement =>
+        helpers.isReactPropTypeAssignmentStatement(statement),
     ) as ts.ExpressionStatement[];
 
-
     for (const propTypeAssignment of propTypeAssignments) {
-
         // Look for the class declarations with the same name
-        const componentName = getComponentName(propTypeAssignment, sourceFile);
+        const componentName = helpers.getComponentName(propTypeAssignment, sourceFile);
 
-        const classStatement = _.find(
+        const classStatement = (_.find(
             statements,
-            (statement) => ts.isClassDeclaration(statement) &&
+            statement =>
+                ts.isClassDeclaration(statement) &&
                 statement.name !== undefined &&
                 statement.name.getText(sourceFile) === componentName,
-        ) as {} as ts.ClassDeclaration; // Type weirdness
+        ) as {}) as ts.ClassDeclaration; // Type weirdness
 
         // && helpers.isBinaryExpression(propTypeAssignment.expression) is redundant to satisfy the type checker
         if (classStatement && ts.isBinaryExpression(propTypeAssignment.expression)) {
@@ -80,17 +79,6 @@ function visitSourceFile(sourceFile: ts.SourceFile, typeChecker: ts.TypeChecker)
     return ts.updateSourceFileNode(sourceFile, statements);
 }
 
-
-/**
- * Get component name off of a propType assignment statement
- * @param propTypeAssignment
- * @param sourceFile
- */
-function getComponentName(propTypeAssignment: ts.Statement, sourceFile: ts.SourceFile) {
-    const text = propTypeAssignment.getText(sourceFile);
-    return text.substr(0, text.indexOf('.'));
-}
-
 /**
  * Insert a new static member into a class
  * @param classDeclaration
@@ -98,7 +86,7 @@ function getComponentName(propTypeAssignment: ts.Statement, sourceFile: ts.Sourc
  * @param value
  */
 function addStaticMemberToClass(classDeclaration: ts.ClassDeclaration, name: string, value: ts.Expression) {
-    const staticModifier = ts.createToken(ts.SyntaxKind.StaticKeyword)
+    const staticModifier = ts.createToken(ts.SyntaxKind.StaticKeyword);
     const propertyDeclaration = ts.createProperty([], [staticModifier], name, undefined, undefined, value);
     return ts.updateClassDeclaration(
         classDeclaration,
@@ -107,6 +95,6 @@ function addStaticMemberToClass(classDeclaration: ts.ClassDeclaration, name: str
         classDeclaration.name,
         classDeclaration.typeParameters,
         ts.createNodeArray(classDeclaration.heritageClauses),
-        ts.createNodeArray([propertyDeclaration, ...classDeclaration.members])
-    )
+        ts.createNodeArray([propertyDeclaration, ...classDeclaration.members]),
+    );
 }
