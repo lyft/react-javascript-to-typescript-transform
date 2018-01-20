@@ -4,25 +4,11 @@
     },
     "defaultSeverity": "warning",
     "rules": {
-        "quotemark": [
-            true,
-            "single",
-            "avoid-escape"
-        ],
-        "max-line-length": [
-            true,
-            120
-        ],
-        "indent": [
-            "error",
-            4
-        ],
-        "only-arrow-functions": [
-            false
-        ],
+        "quotemark": [true, "single", "avoid-escape"],
+        "max-line-length": [true, 120],
+        "indent": ["error", 4],
+        "only-arrow-functions": [false],
         // Disabled rules
-        "typedef": [
-            false
-        ]
+        "typedef": [false]
     }
 }

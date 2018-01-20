@@ -1,24 +1,12 @@
 import * as ts from 'typescript';
 
 import { compile } from './compiler';
-import {
-    reactJSMakePropsAndStateInterfaceTransformFactoryFactory,
-} from './transforms/react-js-make-props-and-state-transform';
-import {
-    reactHoistGenericsTransformFactoryFactory,
-} from './transforms/react-hoist-generics-transform';
-import {
-    reactRemovePropTypesAssignmentTransformFactoryFactory,
-} from './transforms/react-remove-prop-types-assignment-transform';
-import {
-    reactMovePropTypesToClassTransformFactoryFactory,
-} from './transforms/react-move-prop-types-to-class-transform';
-import {
-    collapseIntersectionInterfacesTransformFactoryFactory,
-} from './transforms/collapse-intersection-interfaces-transform';
-import {
-    reactRemoveStaticPropTypesMemberTransformFactoryFactory,
-} from './transforms/react-remove-static-prop-types-member-transform';
+import { reactJSMakePropsAndStateInterfaceTransformFactoryFactory } from './transforms/react-js-make-props-and-state-transform';
+import { reactHoistGenericsTransformFactoryFactory } from './transforms/react-hoist-generics-transform';
+import { reactRemovePropTypesAssignmentTransformFactoryFactory } from './transforms/react-remove-prop-types-assignment-transform';
+import { reactMovePropTypesToClassTransformFactoryFactory } from './transforms/react-move-prop-types-to-class-transform';
+import { collapseIntersectionInterfacesTransformFactoryFactory } from './transforms/collapse-intersection-interfaces-transform';
+import { reactRemoveStaticPropTypesMemberTransformFactoryFactory } from './transforms/react-remove-static-prop-types-member-transform';
 
 export {
     reactMovePropTypesToClassTransformFactoryFactory,

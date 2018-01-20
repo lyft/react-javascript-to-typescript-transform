@@ -11,7 +11,7 @@ program
     .version('1.0.0')
     .usage('[options] <filename or glob>')
     .command('* <glob>')
-    .action((globPattern) => {
+    .action(globPattern => {
         if (!globPattern) {
             throw new Error('You must provide a file name or glob pattern to transform');
         }
@@ -24,7 +24,7 @@ program
                 fs.renameSync(filePath, newPath);
                 const result = run(newPath);
                 fs.writeFileSync(newPath, result);
-            } catch(error) {
+            } catch (error) {
                 console.warn(`Failed to convert ${file}`);
                 console.warn(error);
             }

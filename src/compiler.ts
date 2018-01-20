@@ -22,20 +22,21 @@ export function compile(filePath: string, factoryFactories: TransformFactoryFact
         factoryFactories.map(factoryFactory => factoryFactory(typeChecker), compilerOptions),
     );
 
-
     if (result.diagnostics && result.diagnostics.length) {
-        console.log(chalk.yellow(`
+        console.log(
+            chalk.yellow(`
         ======================= Diagnostics for ${filePath} =======================
-        `));
+        `),
+        );
         for (const diag of result.diagnostics) {
             if (diag.file && diag.start) {
                 const pos = diag.file.getLineAndCharacterOfPosition(diag.start);
-                console.log(`(${pos.line}, ${pos.character}) ${diag.messageText}`)
+                console.log(`(${pos.line}, ${pos.character}) ${diag.messageText}`);
             }
         }
     }
 
-    const printer = ts.createPrinter()
+    const printer = ts.createPrinter();
 
     // TODO: fix the index 0 access... What if program have multiple source files?
     return printer.printNode(ts.EmitHint.SourceFile, result.transformed[0], sourceFiles[0]);

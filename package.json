@@ -1,52 +1,57 @@
 {
-  "name": "react-js-to-ts",
-  "version": "1.2.0",
-  "description": "Convert React code from JavaScript to TypeScript",
-  "main": "dist/index.js",
-  "scripts": {
-    "pretest": "npm run build",
-    "test": "jest",
-    "coverage": "jest --coverage",
-    "posttest": "npm run lint",
-    "prelint": "npm run clean",
-    "lint": "tslint --type-check --project tsconfig.json --format codeFrame --exclude test/**/*.tsx",
-    "prepublish": "npm run build",
-    "clean": "rm -rf dist",
-    "prebuild": "npm run clean",
-    "build": "tsc --pretty"
-  },
-  "jest": {
-    "mapCoverage": true,
-    "transform": {
-      ".ts": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    "name": "react-js-to-ts",
+    "version": "1.2.0",
+    "description": "Convert React code from JavaScript to TypeScript",
+    "main": "dist/index.js",
+    "scripts": {
+        "pretest": "npm run build",
+        "test": "jest",
+        "coverage": "jest --coverage",
+        "posttest": "npm run lint",
+        "prelint": "npm run clean",
+        "lint": "tslint --type-check --project tsconfig.json --format codeFrame --exclude test/**/*.tsx",
+        "prepublish": "npm run build",
+        "clean": "rm -rf dist",
+        "prebuild": "npm run clean",
+        "build": "tsc --pretty",
+        "precommit": "lint-staged",
+        "prettier": "prettier --write *.{js,json,css,md,ts,tsx}"
     },
-    "testRegex": "test/runner.ts",
-    "moduleFileExtensions": [
-      "ts",
-      "js"
-    ]
-  },
-  "bin": "dist/cli.js",
-  "author": "Mohsen Azimi <me@azimi.me>",
-  "license": "Apache-2.0",
-  "dependencies": {
-    "chalk": "^1.1.3",
-    "commander": "^2.10.0",
-    "glob": "^7.1.2",
-    "lodash": "^4.17.4",
-    "typescript": "^2.6.2"
-  },
-  "devDependencies": {
-    "@types/chalk": "^0.4.31",
-    "@types/commander": "^2.9.1",
-    "@types/glob": "^5.0.30",
-    "@types/jest": "^20.0.2",
-    "@types/lodash": "^4.14.93",
-    "@types/node": "^8.0.2",
-    "@types/react": "^15.0.31",
-    "jest": "^20.0.4",
-    "ts-jest": "^20.0.6",
-    "ts-node": "^3.1.0",
-    "tslint": "^5.2.0"
-  }
+    "jest": {
+        "mapCoverage": true,
+        "transform": {
+            ".ts": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+        },
+        "testRegex": "test/runner.ts",
+        "moduleFileExtensions": ["ts", "js"]
+    },
+    "lint-staged": {
+        "*.{js,json,css,md,ts,tsx}": ["npm run prettier", "git add"]
+    },
+    "bin": "dist/cli.js",
+    "author": "Mohsen Azimi <me@azimi.me>",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "chalk": "^1.1.3",
+        "commander": "^2.10.0",
+        "glob": "^7.1.2",
+        "lodash": "^4.17.4",
+        "typescript": "^2.6.2"
+    },
+    "devDependencies": {
+        "@types/chalk": "^0.4.31",
+        "@types/commander": "^2.9.1",
+        "@types/glob": "^5.0.30",
+        "@types/jest": "^20.0.2",
+        "@types/lodash": "^4.14.93",
+        "@types/node": "^8.0.2",
+        "@types/react": "^15.0.31",
+        "husky": "^0.14.3",
+        "jest": "^20.0.4",
+        "lint-staged": "^6.0.1",
+        "prettier": "^1.10.2",
+        "ts-jest": "^20.0.6",
+        "ts-node": "^3.1.0",
+        "tslint": "^5.2.0"
+    }
 }

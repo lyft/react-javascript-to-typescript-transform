@@ -13,9 +13,7 @@
             "preLaunchTask": "compile",
             "program": "${workspaceRoot}/node_modules/.bin/jest",
             "request": "launch",
-            "runtimeArgs": [
-
-            ],
+            "runtimeArgs": [],
             "runtimeExecutable": null,
             "sourceMaps": true,
             "stopOnEntry": false,
