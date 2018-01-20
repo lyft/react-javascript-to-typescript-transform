@@ -1,8 +1,8 @@
 import * as ts from 'typescript';
-
+import * as _ from 'lodash';
 import * as helpers from '../helpers';
 
-export type Factory = ts.TransformerFactory<ts.Node>;
+export type Factory = ts.TransformerFactory<ts.SourceFile>;
 
 /**
  * Get transform for transforming React code originally written in JS which does not have
@@ -18,291 +18,315 @@ export function reactJSMakePropsAndStateInterfaceTransformFactoryFactory(typeChe
             return visited;
 
             function visitor(node: ts.Node) {
-                if (helpers.isClassDeclaration(node)) {
-                    return visitClassDeclaration(node);
+                if (ts.isClassDeclaration(node)) {
+                    return visitClassDeclaration(node, sourceFile, typeChecker);
                 }
 
                 return node;
             }
+        }
+    }
+}
 
-            function visitClassDeclaration(classDeclaration: ts.ClassDeclaration) {
-                if (!helpers.isReactComponent(classDeclaration, typeChecker)) {
-                    return classDeclaration;
-                }
+function visitClassDeclaration(
+    classDeclaration: ts.ClassDeclaration,
+    sourceFile: ts.SourceFile,
+    typeChecker: ts.TypeChecker
+) {
+    if (!helpers.isReactComponent(classDeclaration, typeChecker)) {
+        return classDeclaration;
+    }
 
-                if (!classDeclaration.heritageClauses || !classDeclaration.heritageClauses.length) {
-                    return classDeclaration;
-                }
+    if (!classDeclaration.heritageClauses || !classDeclaration.heritageClauses.length) {
+        return classDeclaration;
+    }
 
-                const firstHeritageClauses = classDeclaration.heritageClauses[0];
-                const expressionWithTypeArguments = firstHeritageClauses.types[0];
+    const firstHeritageClause = classDeclaration.heritageClauses[0];
 
-                firstHeritageClauses.types[0] = ts.updateExpressionWithTypeArguments(
-                    expressionWithTypeArguments,
-                    [
-                        getPropsTypeOfReactComponentClass(classDeclaration),
-                        getStateTypeOfReactComponentClass(classDeclaration),
-                    ],
-                    expressionWithTypeArguments.expression,
-                )
+    const newFirstHeritageClauseTypes = helpers.replaceItem(
+        firstHeritageClause.types,
+        firstHeritageClause.types[0],
+        ts.updateExpressionWithTypeArguments(
+            firstHeritageClause.types[0],
+            [
+                getPropsTypeOfReactComponentClass(classDeclaration, sourceFile),
+                getStateTypeOfReactComponentClass(classDeclaration, typeChecker),
+            ],
+            firstHeritageClause.types[0].expression,
+        ),
+    );
 
-                return ts.updateClassDeclaration(
-                    classDeclaration,
-                    classDeclaration.decorators,
-                    classDeclaration.modifiers,
-                    classDeclaration.name,
-                    classDeclaration.typeParameters,
-                    classDeclaration.heritageClauses,
-                    classDeclaration.members,
+    const newHeritageClauses = helpers.replaceItem(
+        classDeclaration.heritageClauses,
+        firstHeritageClause,
+        ts.updateHeritageClause(firstHeritageClause, newFirstHeritageClauseTypes),
+    );
+
+    return ts.updateClassDeclaration(
+        classDeclaration,
+        classDeclaration.decorators,
+        classDeclaration.modifiers,
+        classDeclaration.name,
+        classDeclaration.typeParameters,
+        newHeritageClauses,
+        classDeclaration.members,
+    );
+}
+
+function getPropsTypeOfReactComponentClass(
+    classDeclaration: ts.ClassDeclaration,
+    sourceFile: ts.SourceFile,
+): ts.TypeNode {
+    const staticPropTypesMember = _.find(classDeclaration.members, (member) => {
+        return ts.isPropertyDeclaration(member) &&
+            helpers.hasStaticModifier(member) &&
+            helpers.isPropTypesMember(member, sourceFile);
+    });
+
+    if (
+        staticPropTypesMember !== undefined
+        && ts.isPropertyDeclaration(staticPropTypesMember) // check to satisfy type checker
+        && staticPropTypesMember.initializer
+        && ts.isObjectLiteralExpression(staticPropTypesMember.initializer)
+    ) {
+        return buildInterfaceFromPropTypeObjectLiteral(staticPropTypesMember.initializer)
+    }
+
+    const staticPropTypesGetterMember = _.find(classDeclaration.members, (member) => {
+        return ts.isGetAccessorDeclaration(member) &&
+            helpers.hasStaticModifier(member) &&
+            helpers.isPropTypesMember(member, sourceFile);
+    });
+
+    if (
+        staticPropTypesGetterMember !== undefined
+        && ts.isGetAccessorDeclaration(staticPropTypesGetterMember) // check to satisfy typechecker
+    ) {
+        const returnStatement = _.find(
+            staticPropTypesGetterMember.body.statements,
+            (statement) => ts.isReturnStatement(statement),
+        );
+        if (
+            returnStatement !== undefined
+            && ts.isReturnStatement(returnStatement) // check to satisfy typechecker
+            && returnStatement.expression
+            && ts.isObjectLiteralExpression(returnStatement.expression)
+        ) {
+            return buildInterfaceFromPropTypeObjectLiteral(
+                returnStatement.expression
+            )
+        }
+    }
+
+    return ts.createTypeLiteralNode([]);
+}
+
+function getStateTypeOfReactComponentClass(
+    classDeclaration: ts.ClassDeclaration,
+    typeChecker: ts.TypeChecker,
+): ts.TypeNode {
+    const initialState = getInitialStateFromClassDeclaration(classDeclaration, typeChecker);
+    const initialStateIsVoid = initialState.kind === ts.SyntaxKind.VoidKeyword;
+    const collectedStateTypes = getStateLookingForSetStateCalls(classDeclaration, typeChecker);
+    if (!collectedStateTypes.length && initialStateIsVoid) {
+        return ts.createTypeLiteralNode([]);
+    }
+    if (!initialStateIsVoid) {
+        collectedStateTypes.push(initialState)
+    }
+
+    return ts.createUnionOrIntersectionTypeNode(ts.SyntaxKind.IntersectionType, collectedStateTypes);
+}
+
+/**
+ * Get initial state of a React component looking for state value initially set
+ * @param classDeclaration
+ * @param typeChecker
+ */
+function getInitialStateFromClassDeclaration(
+    classDeclaration: ts.ClassDeclaration,
+    typeChecker: ts.TypeChecker,
+): ts.TypeNode {
+    // initial state class member
+
+    const initialStateMember = _.find(classDeclaration.members, (member) => {
+        try {
+            return ts.isPropertyDeclaration(member) &&
+                member.name &&
+                member.name.getText() === 'state';
+        } catch(e) {
+            return false;
+        }
+    });
+
+    if (initialStateMember
+        && ts.isPropertyDeclaration(initialStateMember)
+        && initialStateMember.initializer
+    ) {
+        const type = typeChecker.getTypeAtLocation(initialStateMember.initializer)!
+
+        return typeChecker.typeToTypeNode(type);
+    }
+
+    // Initial state in constructor
+    const constructor = _.find(
+        classDeclaration.members,
+        (member) => member.kind === ts.SyntaxKind.Constructor,
+    ) as ts.ConstructorDeclaration | undefined;
+
+    if (constructor && constructor.body) {
+        for (const statement of constructor.body.statements) {
+            if (
+                ts.isExpressionStatement(statement) &&
+                ts.isBinaryExpression(statement.expression) &&
+                statement.expression.left.getText() === 'this.state'
+            ) {
+                return typeChecker.typeToTypeNode(
+                    typeChecker.getTypeAtLocation(statement.expression.right)
                 );
-
-                function getPropsTypeOfReactComponentClass(classDeclaration: ts.ClassDeclaration): ts.TypeNode {
-                    const staticPropTypesMember = helpers.find(classDeclaration.members, (member) => {
-                        return helpers.isPropertyDeclaration(member) &&
-                            helpers.hasStaticModifier(member) &&
-                            helpers.isPropTypesMember(member, sourceFile);
-                    });
-
-                    if (
-                        staticPropTypesMember !== undefined
-                        && helpers.isPropertyDeclaration(staticPropTypesMember) // check to satisfy type checker
-                        && staticPropTypesMember.initializer
-                        && helpers.isObjectLiteralExpression(staticPropTypesMember.initializer)
-                    ) {
-                        return buildInterfaceFromPropTypeObjectLiteral(staticPropTypesMember.initializer)
-                    }
-
-                    const staticPropTypesGetterMember = helpers.find(classDeclaration.members, (member) => {
-                        return helpers.isGetAccessorDeclaration(member) &&
-                            helpers.hasStaticModifier(member) &&
-                            helpers.isPropTypesMember(member, sourceFile);
-                    });
-
-                    if (
-                        staticPropTypesGetterMember !== undefined
-                        && helpers.isGetAccessorDeclaration(staticPropTypesGetterMember) // check to satisfy typechecker
-                    ) {
-                        const returnStatement = helpers.find(
-                            staticPropTypesGetterMember.body.statements,
-                            (statement) => helpers.isReturnStatement(statement),
-                        );
-                        if (
-                            returnStatement !== undefined
-                            && helpers.isReturnStatement(returnStatement) // check to satisfy typechecker
-                            && returnStatement.expression
-                            && helpers.isObjectLiteralExpression(returnStatement.expression)
-                        ) {
-                            return buildInterfaceFromPropTypeObjectLiteral(
-                                returnStatement.expression
-                            )
-                        }
-                    }
-
-                    return ts.createTypeLiteralNode([]);
-                }
-
-                function getStateTypeOfReactComponentClass(classDeclaration: ts.ClassDeclaration): ts.TypeNode {
-                    const initialState = getInitialStateFromClassDeclaration(classDeclaration, typeChecker);
-                    const initialStateIsVoid = initialState.kind === ts.SyntaxKind.VoidKeyword;
-                    const collectedStateTypes = getStateLookingForSetStateCalls(classDeclaration, typeChecker);
-                    if (!collectedStateTypes.length && initialStateIsVoid) {
-                        return ts.createTypeLiteralNode([]);
-                    }
-                    if (!initialStateIsVoid) {
-                        collectedStateTypes.push(initialState)
-                    }
-
-                    return ts.createUnionOrIntersectionTypeNode(ts.SyntaxKind.IntersectionType, collectedStateTypes);
-                }
             }
+        }
+    }
 
-            /**
-             * Get initial state of a React component looking for state value initially set
-             * @param classDeclaration
-             * @param typeChecker
-             */
-            function getInitialStateFromClassDeclaration(
-                classDeclaration: ts.ClassDeclaration,
-                typeChecker: ts.TypeChecker,
-            ): ts.TypeNode {
-                // initial state class member
+    // No initial state, fall back to void
+    return ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword);
+}
 
-                const initialStateMember = helpers.find(classDeclaration.members, (member) => {
-                    try {
-                        return helpers.isPropertyDeclaration(member) &&
-                            member.name &&
-                            member.name.getText() === 'state';
-                    } catch(e) {
-                        return false;
-                    }
-                });
+/**
+ * Look for setState() function calls to collect the state interface in a React class component
+ * @param classDeclaration
+ * @param typeChecker
+ */
+function getStateLookingForSetStateCalls(
+    classDeclaration: ts.ClassDeclaration,
+    typeChecker: ts.TypeChecker,
+): ts.TypeNode[] {
+    const typeNodes: ts.TypeNode[] = [];
+    for (const member of classDeclaration.members) {
+        if (member && ts.isMethodDeclaration(member) && member.body) {
+            lookForSetState(member.body)
+        }
+    }
 
-                if (initialStateMember
-                    && helpers.isPropertyDeclaration(initialStateMember)
-                    && initialStateMember.initializer
-                ) {
-                    const type = typeChecker.getTypeAtLocation(initialStateMember.initializer)!
+    return typeNodes;
 
-                    return typeChecker.typeToTypeNode(type);
-                }
+    function lookForSetState(node: ts.Node) {
+        ts.forEachChild(node, lookForSetState)
+        if (
+            ts.isExpressionStatement(node) &&
+            ts.isCallExpression(node.expression) &&
+            node.expression.expression.getText().match(/setState/)
+        ) {
+            const type = typeChecker.getTypeAtLocation(node.expression.arguments[0])
+            typeNodes.push(typeChecker.typeToTypeNode(type));
+        }
+    }
+}
 
-                // Initial state in constructor
-                const constructor = helpers.find(
-                    classDeclaration.members,
-                    (member) => member.kind === ts.SyntaxKind.Constructor,
-                ) as ts.ConstructorDeclaration | undefined;
+/**
+ * Build props interface from propTypes object
+ * @example
+ * {
+ *   foo: React.PropTypes.string.isRequired
+ * }
+ *
+ * becomes
+ * {
+ *  foo: string;
+ * }
+ * @param objectLiteral
+ */
+function buildInterfaceFromPropTypeObjectLiteral(objectLiteral: ts.ObjectLiteralExpression) {
+    const members = objectLiteral.properties
+        // We only need to process PropertyAssignment:
+        // {
+        //    a: 123     // PropertyAssignment
+        // }
+        //
+        // filter out:
+        // {
+        //   a() {},     // MethodDeclaration
+        //   b,          // ShorthandPropertyAssignment
+        //   ...c,       // SpreadAssignment
+        //   get d() {}, // AccessorDeclaration
+        // }
+        .filter(ts.isPropertyAssignment)
+        .filter(property => {
+            return (
+                // Ignore children, React types have it
+                property.name.getText() !== 'children' &&
+                ts.isPropertyAccessExpression(property.initializer)
+            )
+        })
+        .map(propertyAssignment => {
+            const name = propertyAssignment.name.getText();
+            // We have guarantee this in the previous `filter`
+            const initializer = propertyAssignment.initializer as ts.PropertyAccessExpression
+            const typeValue = getTypeFromReactPropTypeExpression(initializer);
+            const isOptional = isPropTypeOptional(initializer);
 
-                if (constructor && constructor.body) {
-                    for (const statement of constructor.body.statements) {
-                        if (
-                            helpers.isExpressionStatement(statement) &&
-                            helpers.isBinaryExpression(statement.expression) &&
-                            statement.expression.left.getText() === 'this.state'
-                        ) {
-                            return typeChecker.typeToTypeNode(
-                                typeChecker.getTypeAtLocation(statement.expression.right)
-                            );
-                        }
-                    }
-                }
+            return ts.createPropertySignature(
+                [],
+                name,
+                isOptional ? ts.createToken(ts.SyntaxKind.QuestionToken) : undefined,
+                typeValue,
+                undefined,
+            );
+        });
 
-                // No initial state, fall back to void
-                return ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword);
-            }
+        return ts.createTypeLiteralNode(members)
+}
 
-            /**
-             * Look for setState() function calls to collect the state interface in a React class component
-             * @param classDeclaration
-             * @param typeChecker
-             */
-            function getStateLookingForSetStateCalls(
-                classDeclaration: ts.ClassDeclaration,
-                typeChecker: ts.TypeChecker,
-            ): ts.TypeNode[] {
-                const typeNodes: ts.TypeNode[] = [];
-                for (const member of classDeclaration.members) {
-                    if (member && helpers.isMethodDeclaration(member) && member.body) {
-                        lookForSetState(member.body)
-                    }
-                }
+/**
+ * Turns React.PropTypes.* into TypeScript type value
+ *
+ * @param node React propTypes value
+ */
+function getTypeFromReactPropTypeExpression(node: ts.PropertyAccessExpression) {
+    const text = node.getText().replace(/React\.PropTypes\./, '');
+    let result = null;
+    if (/string/.test(text)) {
+        result = ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword);
+    } else if (/any/.test(text)) {
+        result = ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
+    } else if (/array/.test(text)) {
+        result = ts.createArrayTypeNode(ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword));
+    } else if (/bool/.test(text)) {
+        result = ts.createKeywordTypeNode(ts.SyntaxKind.BooleanKeyword);
+    } else if (/number/.test(text)) {
+        result = ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword);
+    } else if (/object/.test(text)) {
+        result = ts.createKeywordTypeNode(ts.SyntaxKind.ObjectKeyword);
+    } else if (/node/.test(text)) {
+        result = ts.createTypeReferenceNode('React.ReactNode', []);
+    } else if (/element/.test(text)) {
+        result = ts.createTypeReferenceNode('JSX.Element', []);
+    } else if (/func/.test(text)) {
+        const arrayOfAny = ts.createParameter(
+            [],
+            [],
+            ts.createToken(ts.SyntaxKind.DotDotDotToken),
+            'args',
+            undefined,
+            ts.createArrayTypeNode(ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)),
+            undefined,
+        );
+        result = ts.createFunctionTypeNode(
+            [],
+            [arrayOfAny],
+            ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+        );
+    } else {
+        result = ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
+    }
+    return result;
+}
 
-                return typeNodes;
-
-                function lookForSetState(node: ts.Node) {
-                    ts.forEachChild(node, lookForSetState)
-                    if (
-                        helpers.isExpressionStatement(node) &&
-                        helpers.isCallExpression(node.expression) &&
-                        node.expression.expression.getText().match(/setState/)
-                    ) {
-                        const type = typeChecker.getTypeAtLocation(node.expression.arguments[0])
-                        typeNodes.push(typeChecker.typeToTypeNode(type));
-                    }
-                }
-            }
-
-            /**
-             * Build props interface from propTypes object
-             * @example
-             * {
-             *   foo: React.PropTypes.string.isRequired
-             * }
-             *
-             * becomes
-             * {
-             *  foo: string;
-             * }
-             * @param objectLiteral
-             */
-            function buildInterfaceFromPropTypeObjectLiteral(objectLiteral: ts.ObjectLiteralExpression) {
-                const resultObjectLiteral = objectLiteral.properties.reduce(
-                    (result, propertyAssignment: ts.PropertyAssignment) => {
-                        const name = propertyAssignment.name.getText();
-                        if (!helpers.isPropertyAccessExpression(propertyAssignment.initializer)) {
-                            console.warn('Bad value for propType', name, 'at', propertyAssignment.getStart());
-                            return result;
-                        }
-
-                        // Ignore children, React types have it
-                        if (propertyAssignment.name.getText() === 'children') {
-                            return result;
-                        }
-
-                        // Ignore children, React types have it
-                        if (propertyAssignment.name.getText() === 'children') {
-                            return result;
-                        }
-
-                        const typeValue = getTypeFromReactPropTypeExpression(propertyAssignment.initializer);
-                        const isOptional = isPropTypeOptional(propertyAssignment.initializer);
-                        const propertySignature = ts.createPropertySignature(
-                            [],
-                            name,
-                            isOptional ? ts.createToken(ts.SyntaxKind.QuestionToken): undefined,
-                            typeValue,
-                            undefined,
-                        );
-                        result.members.push(propertySignature)
-                        return result;
-                }, ts.createTypeLiteralNode([]));
-
-
-                return resultObjectLiteral;
-            }
-
-            /**
-             * Turns React.PropTypes.* into TypeScript type value
-             *
-             * @param node React propTypes value
-             */
-            function getTypeFromReactPropTypeExpression(node: ts.PropertyAccessExpression) {
-                const text = node.getText().replace(/React\.PropTypes\./, '');
-                let result = null;
-                if (/string/.test(text)) {
-                    result = ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword);
-                } else if (/any/.test(text)) {
-                    result = ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
-                } else if (/array/.test(text)) {
-                    result = ts.createArrayTypeNode(ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword));
-                } else if (/bool/.test(text)) {
-                    result = ts.createKeywordTypeNode(ts.SyntaxKind.BooleanKeyword);
-                } else if (/number/.test(text)) {
-                    result = ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword);
-                } else if (/object/.test(text)) {
-                    result = ts.createKeywordTypeNode(ts.SyntaxKind.ObjectKeyword);
-                } else if (/node/.test(text)) {
-                    result = ts.createTypeReferenceNode('React.ReactNode', []);
-                } else if (/element/.test(text)) {
-                    result = ts.createTypeReferenceNode('JSX.Element', []);
-                } else if (/func/.test(text)) {
-                    const arrayOfAny = ts.createParameter(
-                        [],
-                        [],
-                        ts.createToken(ts.SyntaxKind.DotDotDotToken),
-                        'args',
-                        undefined,
-                        ts.createArrayTypeNode(ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)),
-                        undefined,
-                    );
-                    result = ts.createFunctionTypeNode(
-                        [],
-                        [arrayOfAny],
-                        ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
-                    );
-                } else {
-                    result = ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
-                }
-                return result;
-            }
-
-            /**
-             * Decide if node is optional
-             * @param node React propTypes member node
-             */
-            function isPropTypeOptional(node: ts.PropertyAccessExpression) {
-                const text = node.getText().replace(/React\.PropTypes\./, '');
-                return !/\.isRequired/.test(text)
-            }
-        };
-    };
-};
+/**
+ * Decide if node is optional
+ * @param node React propTypes member node
+ */
+function isPropTypeOptional(node: ts.PropertyAccessExpression) {
+    const text = node.getText().replace(/React\.PropTypes\./, '');
+    return !/\.isRequired/.test(text)
+}

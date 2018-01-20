@@ -1,5 +1,4 @@
 import * as React from 'react';
-
 type MyComponentProps = {
     foo: string;
     bar: object;

@@ -1,7 +1,5 @@
 import * as ts from 'typescript';
-import * as kinds from './isKind';
-
-export * from './isKind';
+import * as _ from 'lodash';
 
 /**
  * If a class declaration a react class?
@@ -54,7 +52,7 @@ export function isReactComponent(classDeclaration: ts.ClassDeclaration, typeChec
 export function isReactHeritageClause(clause: ts.HeritageClause) {
     return clause.token === ts.SyntaxKind.ExtendsKeyword &&
         clause.types.length === 1 &&
-        kinds.isExpressionWithTypeArguments(clause.types[0]) &&
+        ts.isExpressionWithTypeArguments(clause.types[0]) &&
         /Component/.test(clause.types[0].expression.getText());
 }
 
@@ -65,10 +63,10 @@ export function isReactHeritageClause(clause: ts.HeritageClause) {
  * @param statement
  */
 export function isReactPropTypeAssignmentStatement(statement: ts.Statement): statement is ts.ExpressionStatement {
-    return kinds.isExpressionStatement(statement)
-        && kinds.isBinaryExpression(statement.expression)
+    return ts.isExpressionStatement(statement)
+        && ts.isBinaryExpression(statement.expression)
         && statement.expression.operatorToken.kind === ts.SyntaxKind.FirstAssignment
-        && kinds.isPropertyAccessExpression(statement.expression.left)
+        && ts.isPropertyAccessExpression(statement.expression.left)
         && /\.propTypes$|\.propTypes\..+$/.test(statement.expression.left.getText())
 }
 
@@ -80,7 +78,7 @@ export function hasStaticModifier(classMember: ts.ClassElement) {
     if (!classMember.modifiers) {
         return false;
     }
-    const staticModifier = find(classMember.modifiers, (modifier) => {
+    const staticModifier = _.find(classMember.modifiers, (modifier) => {
         return modifier.kind == ts.SyntaxKind.StaticKeyword;
     });
     return staticModifier !== undefined;
@@ -99,49 +97,18 @@ export function isPropTypesMember(classMember: ts.ClassElement, sourceFile: ts.S
     }
 }
 
-// TODO: replace following functions with Lodash?
-// ---------------------------------------------------------------------------------------------------------
-
-/**
- * Find an item in a collection with a matcher
- * @param collection
- * @param matcher
- */
-export function find<T>(collection: T[], matcher: (item: T) => boolean): T | undefined {
-    for (const item of collection) {
-        if (matcher(item)) { return item; }
-    }
-
-    return undefined;
-}
-
-/**
- * Look in a collection and see if collection has a specific item
- * @param collection
- * @param matcher
- */
-export function has<T>(collection: T[], matcher: (item: T) => boolean): boolean {
-    if (!collection || !collection.length) {
-        return false;
-    }
-
-    for (const item of collection) {
-        if (matcher(item)) { return true; }
-    }
-
-    return false;
-}
-
 /**
  * Insert an item in middle of an array after a specific item
  * @param collection
  * @param afterItem
  * @param newItem
  */
-export function insertAfter<T>(collection: T[], afterItem: T, newItem: T) {
-    const index = collection.indexOf(afterItem) + 1;
+export function insertAfter<T>(collection: ArrayLike<T>, afterItem: T, newItem: T) {
+    const index = _.indexOf(collection, afterItem) + 1;
 
-    return collection.slice(0, index).concat(newItem).concat(collection.slice(index));
+    return _.slice(collection, 0, index)
+        .concat(newItem)
+        .concat(_.slice(collection, index));
 }
 
 /**
@@ -150,10 +117,12 @@ export function insertAfter<T>(collection: T[], afterItem: T, newItem: T) {
  * @param beforeItem
  * @param newItem
  */
-export function insertBefore<T>(collection: T[], beforeItem: T, newItem: T) {
-    const index = collection.indexOf(beforeItem);
+export function insertBefore<T>(collection: ArrayLike<T>, beforeItem: T, newItems: T | T[]) {
+    const index = _.indexOf(collection, beforeItem);
 
-    return collection.slice(0, index).concat(newItem).concat(collection.slice(index));
+    return _.slice(collection, 0, index)
+        .concat(newItems)
+        .concat(_.slice(collection, index));
 }
 
 /**
@@ -162,10 +131,11 @@ export function insertBefore<T>(collection: T[], beforeItem: T, newItem: T) {
  * @param item
  * @param newItem
  */
-export function replaceItem<T>(collection: T[], item: T, newItem: T) {
-    const index = collection.indexOf(item);
-
-    return collection.slice(0, index).concat(newItem).concat(collection.slice(index + 1));
+export function replaceItem<T>(collection: ArrayLike<T>, item: T, newItem: T) {
+    const index = _.indexOf(collection, item);
+    return _.slice(collection, 0, index)
+        .concat(newItem)
+        .concat(_.slice(collection, index + 1));
 }
 
 /**
@@ -174,8 +144,7 @@ export function replaceItem<T>(collection: T[], item: T, newItem: T) {
  * @param item
  * @param newItem
  */
-export function removeItem<T>(collection: T[], item: T) {
-    const index = collection.indexOf(item);
-
-    return collection.slice(0, index).concat(collection.slice(index + 1));
+export function removeItem<T>(collection: ArrayLike<T>, item: T) {
+    const index = _.indexOf(collection, item);
+    return _.slice(collection, 0, index).concat(_.slice(collection, index + 1));
 }

@@ -8,5 +8,4 @@ class SomeComponent extends React.Component<{
         return null;
     }
 }
-
 SomeComponent.propTypes = { foo: React.PropTypes.string };

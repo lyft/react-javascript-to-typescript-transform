@@ -39,7 +39,7 @@ export const allTransforms = [
     reactRemoveStaticPropTypesMemberTransformFactoryFactory,
 ];
 
-export type TransformFactoryFactory = (typeChecker: ts.TypeChecker) => ts.TransformerFactory<ts.Node>;
+export type TransformFactoryFactory = (typeChecker: ts.TypeChecker) => ts.TransformerFactory<ts.SourceFile>;
 
 /**
  * Run React JavaScript to TypeScript transform for file at `filePath`

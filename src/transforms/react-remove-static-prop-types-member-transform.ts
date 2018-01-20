@@ -2,7 +2,7 @@ import * as ts from 'typescript';
 
 import * as helpers from '../helpers';
 
-export type Factory = ts.TransformerFactory<ts.Node>;
+export type Factory = ts.TransformerFactory<ts.SourceFile>;
 
 /**
  * Remove static propTypes
@@ -24,7 +24,7 @@ export function reactRemoveStaticPropTypesMemberTransformFactoryFactory(typeChec
             return ts.visitEachChild(sourceFile, visitor, context);
 
             function visitor(node: ts.Node) {
-                if (helpers.isClassDeclaration(node) && helpers.isReactComponent(node, typeChecker)) {
+                if (ts.isClassDeclaration(node) && helpers.isReactComponent(node, typeChecker)) {
                     return ts.updateClassDeclaration(
                         node,
                         node.decorators,
@@ -34,7 +34,7 @@ export function reactRemoveStaticPropTypesMemberTransformFactoryFactory(typeChec
                         ts.createNodeArray(node.heritageClauses),
                         node.members.filter((member) => {
                             if (
-                                helpers.isPropertyDeclaration(member)
+                                ts.isPropertyDeclaration(member)
                                 && helpers.hasStaticModifier(member)
                                 && helpers.isPropTypesMember(member, sourceFile)
                             ) {
@@ -43,7 +43,7 @@ export function reactRemoveStaticPropTypesMemberTransformFactoryFactory(typeChec
 
                             // propTypes getter
                             if (
-                                helpers.isGetAccessorDeclaration(member)
+                                ts.isGetAccessorDeclaration(member)
                                 && helpers.hasStaticModifier(member)
                                 && helpers.isPropTypesMember(member, sourceFile)
                             ) {

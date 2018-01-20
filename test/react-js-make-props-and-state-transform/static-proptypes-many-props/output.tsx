@@ -1,5 +1,4 @@
 import * as React from 'react';
-
 export default class MyComponent extends React.Component<{
         any?: any;
         array?: any[];
@@ -19,7 +18,8 @@ export default class MyComponent extends React.Component<{
         stringRequired: string;
         nodeRequired: React.ReactNode;
         elementRequired: JSX.Element;
-    }, {}> {
+    }, {
+    }> {
     static propTypes = {
         children: React.PropTypes.node,
         any: React.PropTypes.any,

@@ -1,6 +1,9 @@
 import * as ts from 'typescript';
+import * as _ from 'lodash';
 
 import * as helpers from '../helpers';
+
+export type Factory = ts.TransformerFactory<ts.SourceFile>;
 
 /**
  * Hoist generics to top of a class declarations in a React component
@@ -14,7 +17,7 @@ import * as helpers from '../helpers';
  * type SomeComponentState = {bar: string;};
  * class SomeComponent extends React.Component<SomeComponentProps, SomeComponentState> {}
  */
-export function reactHoistGenericsTransformFactoryFactory(typeChecker: ts.TypeChecker): ts.TransformerFactory<ts.Node> {
+export function reactHoistGenericsTransformFactoryFactory(typeChecker: ts.TypeChecker): Factory {
     return function reactHoistGenericsTransformFactory(context: ts.TransformationContext) {
         return function reactHoistGenericsTransform(node: ts.SourceFile) {
             return visitSourceFile(node);
@@ -24,7 +27,7 @@ export function reactHoistGenericsTransformFactoryFactory(typeChecker: ts.TypeCh
     function visitSourceFile(sourceFile: ts.SourceFile) {
 
         for (const statement of sourceFile.statements) {
-            if (helpers.isClassDeclaration(statement) && helpers.isReactComponent(statement, typeChecker)) {
+            if (ts.isClassDeclaration(statement) && helpers.isReactComponent(statement, typeChecker)) {
                 return hoist(statement, sourceFile);
             }
         }
@@ -40,17 +43,17 @@ export function reactHoistGenericsTransformFactoryFactory(typeChecker: ts.TypeCh
  */
 function hoist(reactClass: ts.ClassDeclaration, sourceFile: ts.SourceFile) {
     if (!reactClass.heritageClauses) {
-        return reactClass;
+        return sourceFile;
     }
     const className = reactClass && reactClass.name && reactClass.name.getText(sourceFile);
-    const reactHeritageClauses =  helpers.find(reactClass.heritageClauses, helpers.isReactHeritageClause);
+    const reactHeritageClauses = _.find(reactClass.heritageClauses, helpers.isReactHeritageClause);
 
     if (reactHeritageClauses === undefined || !reactHeritageClauses.types == undefined) {
-        return reactClass;
+        return sourceFile;
     }
     const [reactType] = reactHeritageClauses.types;
     if (reactType.typeArguments === undefined || reactType.typeArguments.length < 2) {
-        return reactClass;
+        return sourceFile;
     }
 
     const [propType, stateType] = reactType.typeArguments;
@@ -95,7 +98,7 @@ function insertTypeRefs(
     if (reactClassDeclaration.heritageClauses === undefined) {
         return reactClassDeclaration;
     }
-    const reactHeritageClause = helpers.find(reactClassDeclaration.heritageClauses, helpers.isReactHeritageClause);
+    const reactHeritageClause = _.find(reactClassDeclaration.heritageClauses, helpers.isReactHeritageClause);
 
     if (reactHeritageClause === undefined) {
         return reactClassDeclaration;

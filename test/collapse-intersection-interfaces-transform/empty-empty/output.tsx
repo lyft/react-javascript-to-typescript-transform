@@ -1,1 +1,2 @@
-type Foo = {};
+type Foo = {
+};

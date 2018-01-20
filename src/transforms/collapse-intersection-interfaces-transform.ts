@@ -14,7 +14,7 @@ import * as helpers from '../helpers';
  */
 export function collapseIntersectionInterfacesTransformFactoryFactory(
         typeChecker: ts.TypeChecker,
-    ): ts.TransformerFactory<ts.Node> {
+    ): ts.TransformerFactory<ts.SourceFile> {
     return function collapseIntersectionInterfacesTransformFactory(context: ts.TransformationContext) {
         return function collapseIntersectionInterfacesTransform(sourceFile: ts.SourceFile) {
             const visited = ts.visitEachChild(sourceFile, visitor, context);
@@ -23,7 +23,7 @@ export function collapseIntersectionInterfacesTransformFactoryFactory(
             return visited;
 
             function visitor(node: ts.Node) {
-                if (helpers.isTypeAliasDeclaration(node)) {
+                if (ts.isTypeAliasDeclaration(node)) {
                     return visitTypeAliasDeclaration(node);
                 }
 
@@ -32,11 +32,13 @@ export function collapseIntersectionInterfacesTransformFactoryFactory(
 
             function visitTypeAliasDeclaration(node: ts.TypeAliasDeclaration) {
                 if (
-                    helpers.isIntersectionTypeNode(node.type)
-                    && node.type.types.every((type) => helpers.isTypeLiteralNode(type))
+                    ts.isIntersectionTypeNode(node.type)
+                    && node.type.types.every(ts.isTypeLiteralNode)
                 ) {
-                    const allMembers = node.type.types
-                        .map((type: ts.TypeLiteralNode) => type.members)
+                    // We need cast `node.type.types` to `ts.NodeArray<ts.TypeLiteralNode>`
+                    // because TypeScript can't figure out `node.type.types.every(ts.isTypeLiteralNode)`
+                    const allMembers = (node.type.types as ts.NodeArray<ts.TypeLiteralNode>)
+                        .map((type) => type.members)
                         .reduce((all, members) => ts.createNodeArray(all.concat(members)), ts.createNodeArray([]));
 
                     return ts.createTypeAliasDeclaration(
