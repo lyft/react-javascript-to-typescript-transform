@@ -75,8 +75,8 @@ react-js-to-ts my-react-js-file.js
 
 
 ### VSCode plugin
-
-[Download from VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=mohsen1.react-javascript-to-typescript-transform-vscode#review-details)
+details
+[Download from VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=mohsen1.react-javascript-to-typescript-transform-vscode#overview)
 
 ## Development
 
