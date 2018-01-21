@@ -70,9 +70,7 @@ function visitSourceFile(sourceFile: ts.SourceFile, typeChecker: ts.TypeChecker)
                 'propTypes',
                 propTypeAssignment.expression.right,
             );
-            statements = ts.createNodeArray(
-                helpers.replaceItem(sourceFile.statements, classStatement, newClassStatement),
-            );
+            statements = ts.createNodeArray(helpers.replaceItem(statements, classStatement, newClassStatement));
         }
     }
 

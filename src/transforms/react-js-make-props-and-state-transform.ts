@@ -21,13 +21,14 @@ export function reactJSMakePropsAndStateInterfaceTransformFactoryFactory(typeChe
 }
 
 function visitSourceFile(sourceFile: ts.SourceFile, typeChecker: ts.TypeChecker) {
+    let newSourceFile = sourceFile;
     for (const statement of sourceFile.statements) {
         if (ts.isClassDeclaration(statement) && helpers.isReactComponent(statement, typeChecker)) {
-            return visitReactClassDeclaration(statement, sourceFile, typeChecker);
+            newSourceFile = visitReactClassDeclaration(statement, newSourceFile, typeChecker);
         }
     }
 
-    return sourceFile;
+    return newSourceFile;
 }
 
 function visitReactClassDeclaration(

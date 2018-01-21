@@ -42,17 +42,16 @@ export function reactStatelessFunctionMakePropsTransformFactoryFactory(typeCheck
 }
 
 function visitSourceFile(sourceFile: ts.SourceFile, typeChecker: ts.TypeChecker) {
-    let statements = sourceFile.statements;
-
     // Look for propType assignment statements
-    const propTypeAssignments = statements.filter(statement =>
+    const propTypeAssignments = sourceFile.statements.filter(statement =>
         helpers.isReactPropTypeAssignmentStatement(statement),
     ) as ts.ExpressionStatement[];
 
+    let newSourceFile = sourceFile;
     for (const propTypeAssignment of propTypeAssignments) {
-        const componentName = helpers.getComponentName(propTypeAssignment, sourceFile);
+        const componentName = helpers.getComponentName(propTypeAssignment, newSourceFile);
 
-        const funcComponent = (_.find(statements, s => {
+        const funcComponent = (_.find(newSourceFile.statements, s => {
             return (
                 (ts.isFunctionDeclaration(s) && s.name !== undefined && s.name.getText() === componentName) ||
                 (ts.isVariableStatement(s) && s.declarationList.declarations[0].name.getText() === componentName)
@@ -60,11 +59,11 @@ function visitSourceFile(sourceFile: ts.SourceFile, typeChecker: ts.TypeChecker)
         }) as {}) as ts.FunctionDeclaration | ts.VariableStatement; // Type weirdness
 
         if (funcComponent) {
-            return visitReactStatelessComponent(funcComponent, propTypeAssignment, sourceFile);
+            newSourceFile = visitReactStatelessComponent(funcComponent, propTypeAssignment, newSourceFile);
         }
     }
 
-    return sourceFile;
+    return newSourceFile;
 }
 
 function visitReactStatelessComponent(

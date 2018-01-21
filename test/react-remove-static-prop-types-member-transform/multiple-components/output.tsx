@@ -1,11 +1,12 @@
 class SomeComponent extends React.Component<{
-        foo: string;
-        baz: string;
+        foo: number;
     }, {
         bar: string;
     }> {
 }
 class AnotherComponent extends React.Component<{
-        lol: number;
+        foo: number;
+    }, {
+        bar: string;
     }> {
 }
