@@ -7,6 +7,7 @@ import { reactMovePropTypesToClassTransformFactoryFactory } from './transforms/r
 import { collapseIntersectionInterfacesTransformFactoryFactory } from './transforms/collapse-intersection-interfaces-transform';
 import { reactRemoveStaticPropTypesMemberTransformFactoryFactory } from './transforms/react-remove-static-prop-types-member-transform';
 import { reactStatelessFunctionMakePropsTransformFactoryFactory } from './transforms/react-stateless-function-make-props-transform';
+import { reactRemovePropTypesImportTransformFactoryFactory } from './transforms/react-remove-prop-types-import';
 
 export {
     reactMovePropTypesToClassTransformFactoryFactory,
@@ -15,6 +16,7 @@ export {
     collapseIntersectionInterfacesTransformFactoryFactory,
     reactRemovePropTypesAssignmentTransformFactoryFactory,
     reactRemoveStaticPropTypesMemberTransformFactoryFactory,
+    reactRemovePropTypesImportTransformFactoryFactory,
     compile,
 };
 
@@ -25,6 +27,7 @@ export const allTransforms = [
     collapseIntersectionInterfacesTransformFactoryFactory,
     reactRemovePropTypesAssignmentTransformFactoryFactory,
     reactRemoveStaticPropTypesMemberTransformFactoryFactory,
+    reactRemovePropTypesImportTransformFactoryFactory,
 ];
 
 export type TransformFactoryFactory = (typeChecker: ts.TypeChecker) => ts.TransformerFactory<ts.SourceFile>;
