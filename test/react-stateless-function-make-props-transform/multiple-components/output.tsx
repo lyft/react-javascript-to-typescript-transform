@@ -1,11 +1,11 @@
 type HelloProps = {
-    message?: string;
+    message?: string,
 };
 const Hello: React.SFC<HelloProps> = ({ message }) => {
     return <div>hello {message}</div>;
 };
 type HeyProps = {
-    name: string;
+    name: string,
 };
 const Hey: React.SFC<HeyProps> = ({ name }) => {
     return <div>hey, {name}</div>;

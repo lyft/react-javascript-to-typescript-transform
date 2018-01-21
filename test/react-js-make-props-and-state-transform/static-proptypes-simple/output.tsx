@@ -1,9 +1,8 @@
 import * as React from 'react';
 type MyComponentProps = {
-    foo: string;
+    foo: string,
 };
-export default class MyComponent extends React.Component<MyComponentProps, {
-    }> {
+export default class MyComponent extends React.Component<MyComponentProps, {}> {
     static propTypes = {
         foo: React.PropTypes.string.isRequired,
     };

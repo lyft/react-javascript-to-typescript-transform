@@ -1,11 +1,11 @@
 import * as React from 'react';
 type MyComponentProps = {
-    baz: string;
+    baz: string,
 };
 type MyComponentState = {
-    dynamicState: number;
-    foo: number;
-    bar: string;
+    dynamicState: number,
+    foo: number,
+    bar: string,
 };
 export default class MyComponent extends React.Component<MyComponentProps, MyComponentState> {
     state = { foo: 1, bar: 'str' };

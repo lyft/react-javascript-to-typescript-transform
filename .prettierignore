@@ -1,2 +1,3 @@
 test/
 dist/
+!test/transformers.test.ts

@@ -7,6 +7,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as ts from 'typescript';
 import * as chalk from 'chalk';
+import * as _ from 'lodash';
+
 import {
     reactJSMakePropsAndStateInterfaceTransformFactoryFactory,
     reactStatelessFunctionMakePropsTransformFactoryFactory,
@@ -33,6 +35,8 @@ const transformToFolderMap: [string, TransformFactoryFactory[]][] = [
     ['end-to-end', allTransforms],
 ];
 
+const isJestUpdateSnapshotEnabled = !!_.intersection(process.argv, ['-u', '--updateSnapshot']).length;
+
 for (const [testFolderName, getFactory] of transformToFolderMap) {
     describe(testFolderName.replace(/\-/g, ' ').replace('transform', ''), () => {
         for (const folderName of fs.readdirSync(path.join(__dirname, testFolderName))) {
@@ -40,8 +44,17 @@ for (const [testFolderName, getFactory] of transformToFolderMap) {
             if (fs.statSync(folder).isDirectory()) {
                 it(`${testFolderName} ${folderName}`, async () => {
                     const inputPath = path.join(folder, 'input.tsx');
-                    const output = await readFile(path.join(folder, 'output.tsx'));
-                    const result = compile(inputPath, getFactory);
+                    const outputPath = path.join(folder, 'output.tsx');
+                    const result = compile(inputPath, getFactory, {
+                        singleQuote: true,
+                        printWidth: 120,
+                        tabWidth: 4,
+                        trailingComma: 'all',
+                    });
+                    if (isJestUpdateSnapshotEnabled) {
+                        await writeFile(outputPath, result);
+                    }
+                    const output = await readFile(outputPath);
                     expect(stripEmptyLines(result)).toEqual(stripEmptyLines(output));
                 });
             }
@@ -67,6 +80,20 @@ function readFile(pathToFile: string) {
         fs.readFile(pathToFile, (error, buffer) => {
             if (error) { return reject(error); }
             resolve(buffer.toString());
+        });
+    });
+}
+
+/**
+ * Read a file
+ * @param pathToFile Path to a string file
+ * @param contents Contents of the file
+ */
+function writeFile(pathToFile: string, contents: string) {
+    return new Promise<string>((resolve, reject) => {
+        fs.writeFile(pathToFile, contents, (error) => {
+            if (error) { return reject(error); }
+            resolve();
         });
     });
 }

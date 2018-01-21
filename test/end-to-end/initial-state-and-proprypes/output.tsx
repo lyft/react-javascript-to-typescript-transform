@@ -1,10 +1,10 @@
 import * as React from 'react';
 type MyComponentProps = {
-    baz: string;
+    baz: string,
 };
 type MyComponentState = {
-    foo: number;
-    bar: string;
+    foo: number,
+    bar: string,
 };
 export default class MyComponent extends React.Component<MyComponentProps, MyComponentState> {
     state = { foo: 1, bar: 'str' };

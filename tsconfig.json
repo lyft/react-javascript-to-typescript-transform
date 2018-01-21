@@ -11,7 +11,7 @@
         "outDir": "dist",
         "sourceRoot": "../src"
     },
-    "exclude": ["node_modules", "test"],
+    "exclude": ["node_modules", "test", "dist"],
     "types": ["node", "jest"],
     "lib": ["es2017"]
 }

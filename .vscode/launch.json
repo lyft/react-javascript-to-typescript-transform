@@ -7,10 +7,10 @@
             "env": {
                 "NODE_ENV": "test"
             },
-            "externalConsole": false,
+            "console": "internalConsole",
             "name": "Run Tests",
-            "outDir": "${workspaceRoot}/dist",
-            "preLaunchTask": "compile",
+            "outFiles": ["${workspaceRoot}/dist"],
+            "preLaunchTask": "tsc",
             "program": "${workspaceRoot}/node_modules/.bin/jest",
             "request": "launch",
             "runtimeArgs": [],

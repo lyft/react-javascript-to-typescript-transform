@@ -22,7 +22,7 @@
         "transform": {
             ".ts": "<rootDir>/node_modules/ts-jest/preprocessor.js"
         },
-        "testRegex": "test/runner.ts",
+        "testRegex": "(/tests/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
         "moduleFileExtensions": ["ts", "js"]
     },
     "lint-staged": {
@@ -34,22 +34,26 @@
     "dependencies": {
         "chalk": "^1.1.3",
         "commander": "^2.10.0",
+        "detect-indent": "^5.0.0",
         "glob": "^7.1.2",
         "lodash": "^4.17.4",
+        "prettier": "^1.10.2",
         "typescript": "^2.6.2"
     },
     "devDependencies": {
         "@types/chalk": "^0.4.31",
         "@types/commander": "^2.9.1",
+        "@types/detect-indent": "^5.0.0",
         "@types/glob": "^5.0.30",
         "@types/jest": "^20.0.2",
         "@types/lodash": "^4.14.93",
         "@types/node": "^8.0.2",
+        "@types/prettier": "^1.10.0",
         "@types/react": "^15.0.31",
+        "dedent": "^0.7.0",
         "husky": "^0.14.3",
         "jest": "^20.0.4",
         "lint-staged": "^6.0.1",
-        "prettier": "^1.10.2",
         "ts-jest": "^20.0.6",
         "ts-node": "^3.1.0",
         "tslint": "^5.2.0"

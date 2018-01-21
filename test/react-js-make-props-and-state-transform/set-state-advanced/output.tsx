@@ -1,9 +1,10 @@
 import * as React from 'react';
-type MyComponentState = { foo: number; bar: number; } & { baz: number; } & { something: { big: number; here: string; of: { a: number; }[]; }; };
-export default class MyComponent extends React.Component<{
-    }, MyComponentState> {
+type MyComponentState = { foo: number, bar: number } & { baz: number } & {
+    something: { big: number, here: string, of: { a: number }[] },
+};
+export default class MyComponent extends React.Component<{}, MyComponentState> {
     render() {
-        return <button onClick={this.onclick.bind(this)}/>;
+        return <button onClick={this.onclick.bind(this)} />;
     }
     onclick() {
         if (Math.random() > 0.5) {
@@ -23,8 +24,8 @@ export default class MyComponent extends React.Component<{
             something: {
                 big: 123,
                 here: 'string',
-                of: [{ a: 1 }, { a: 2 }]
-            }
+                of: [{ a: 1 }, { a: 2 }],
+            },
         });
     }
 }

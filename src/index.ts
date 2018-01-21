@@ -1,4 +1,5 @@
 import * as ts from 'typescript';
+import * as prettier from 'prettier';
 
 import { compile } from './compiler';
 import { reactJSMakePropsAndStateInterfaceTransformFactoryFactory } from './transforms/react-js-make-props-and-state-transform';
@@ -36,6 +37,6 @@ export type TransformFactoryFactory = (typeChecker: ts.TypeChecker) => ts.Transf
  * Run React JavaScript to TypeScript transform for file at `filePath`
  * @param filePath
  */
-export function run(filePath: string): string {
-    return compile(filePath, allTransforms);
+export function run(filePath: string, prettierOptions: prettier.Options = {}): string {
+    return compile(filePath, allTransforms, prettierOptions);
 }
