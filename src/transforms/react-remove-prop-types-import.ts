@@ -12,10 +12,10 @@ export type Factory = ts.TransformerFactory<ts.SourceFile>;
  * @example
  * Before:
  * import PropTypes from 'prop-types'
- * import React, { PropTypes } from 'rect'
+ * import React, { PropTypes } from 'react'
  *
  * After:
- * import React from 'rect'
+ * import React from 'react'
  */
 export function reactRemovePropTypesImportTransformFactoryFactory(typeChecker: ts.TypeChecker): Factory {
     return function reactRemovePropTypesImportTransformFactory(context: ts.TransformationContext) {
