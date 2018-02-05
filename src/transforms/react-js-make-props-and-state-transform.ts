@@ -137,7 +137,7 @@ function getPropsTypeOfReactComponentClass(
         staticPropTypesGetterMember !== undefined &&
         ts.isGetAccessorDeclaration(staticPropTypesGetterMember) // check to satisfy typechecker
     ) {
-        const returnStatement = _.find(staticPropTypesGetterMember.body.statements, statement =>
+        const returnStatement = _.find(staticPropTypesGetterMember.body!.statements, statement =>
             ts.isReturnStatement(statement),
         );
         if (

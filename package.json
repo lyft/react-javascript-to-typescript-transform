@@ -38,7 +38,7 @@
         "glob": "^7.1.2",
         "lodash": "^4.17.4",
         "prettier": "^1.10.2",
-        "typescript": "^2.6.2"
+        "typescript": "2.7"
     },
     "devDependencies": {
         "@types/chalk": "^0.4.31",
