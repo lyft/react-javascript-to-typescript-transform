@@ -33,7 +33,9 @@ export type Factory = ts.TransformerFactory<ts.SourceFile>;
 export function reactMovePropTypesToClassTransformFactoryFactory(typeChecker: ts.TypeChecker): Factory {
     return function reactMovePropTypesToClassTransformFactory(context: ts.TransformationContext) {
         return function reactMovePropTypesToClassTransform(sourceFile: ts.SourceFile) {
-            return visitSourceFile(sourceFile, typeChecker);
+            const visited = visitSourceFile(sourceFile, typeChecker);
+            ts.addEmitHelpers(visited, context.readEmitHelpers());
+            return visited;
         };
     };
 }

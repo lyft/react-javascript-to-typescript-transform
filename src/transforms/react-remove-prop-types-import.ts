@@ -20,7 +20,7 @@ export type Factory = ts.TransformerFactory<ts.SourceFile>;
 export function reactRemovePropTypesImportTransformFactoryFactory(typeChecker: ts.TypeChecker): Factory {
     return function reactRemovePropTypesImportTransformFactory(context: ts.TransformationContext) {
         return function reactRemovePropTypesImportTransform(sourceFile: ts.SourceFile) {
-            return ts.updateSourceFileNode(
+            const visited = ts.updateSourceFileNode(
                 sourceFile,
                 sourceFile.statements
                     .filter(s => {
@@ -32,6 +32,8 @@ export function reactRemovePropTypesImportTransformFactoryFactory(typeChecker: t
                     })
                     .map(updateReactImportIfNeeded),
             );
+            ts.addEmitHelpers(visited, context.readEmitHelpers());
+            return visited;
         };
     };
 }

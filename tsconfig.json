@@ -7,11 +7,12 @@
         "module": "commonjs",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
+        "downlevelIteration": true,
         "sourceMap": true,
         "outDir": "dist",
-        "sourceRoot": "../src"
+        "sourceRoot": "../src",
+        "lib": ["dom", "es2015"]
     },
     "exclude": ["node_modules", "test", "dist"],
-    "types": ["node", "jest"],
-    "lib": ["es2017"]
+    "types": ["node", "jest"]
 }

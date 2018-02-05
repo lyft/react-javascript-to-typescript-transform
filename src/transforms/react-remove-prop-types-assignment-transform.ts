@@ -15,13 +15,15 @@ export type Factory = ts.TransformerFactory<ts.SourceFile>;
  * After
  * class SomeComponent extends React.Component<{foo: number;}, {bar: string;}> {}
  */
-export function reactRemovePropTypesAssignmentTransformFactoryFactory(typeChecker: ts.TypeChecker): Factory{
+export function reactRemovePropTypesAssignmentTransformFactoryFactory(typeChecker: ts.TypeChecker): Factory {
     return function reactRemovePropTypesAssignmentTransformFactory(context: ts.TransformationContext) {
         return function reactRemovePropTypesAssignmentTransform(sourceFile: ts.SourceFile) {
-            return ts.updateSourceFileNode(
+            const visited = ts.updateSourceFileNode(
                 sourceFile,
                 sourceFile.statements.filter(s => !helpers.isReactPropTypeAssignmentStatement(s)),
             );
-        }
-    }
+            ts.addEmitHelpers(visited, context.readEmitHelpers());
+            return visited;
+        };
+    };
 }

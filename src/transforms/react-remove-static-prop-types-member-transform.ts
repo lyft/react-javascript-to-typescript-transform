@@ -21,7 +21,9 @@ export type Factory = ts.TransformerFactory<ts.SourceFile>;
 export function reactRemoveStaticPropTypesMemberTransformFactoryFactory(typeChecker: ts.TypeChecker): Factory {
     return function reactRemoveStaticPropTypesMemberTransformFactory(context: ts.TransformationContext) {
         return function reactRemoveStaticPropTypesMemberTransform(sourceFile: ts.SourceFile) {
-            return ts.visitEachChild(sourceFile, visitor, context);
+            const visited = ts.visitEachChild(sourceFile, visitor, context);
+            ts.addEmitHelpers(visited, context.readEmitHelpers());
+            return visited;
 
             function visitor(node: ts.Node) {
                 if (ts.isClassDeclaration(node) && helpers.isReactComponent(node, typeChecker)) {
@@ -32,29 +34,29 @@ export function reactRemoveStaticPropTypesMemberTransformFactoryFactory(typeChec
                         node.name,
                         node.typeParameters,
                         ts.createNodeArray(node.heritageClauses),
-                        node.members.filter((member) => {
+                        node.members.filter(member => {
                             if (
-                                ts.isPropertyDeclaration(member)
-                                && helpers.hasStaticModifier(member)
-                                && helpers.isPropTypesMember(member, sourceFile)
+                                ts.isPropertyDeclaration(member) &&
+                                helpers.hasStaticModifier(member) &&
+                                helpers.isPropTypesMember(member, sourceFile)
                             ) {
                                 return false;
                             }
 
                             // propTypes getter
                             if (
-                                ts.isGetAccessorDeclaration(member)
-                                && helpers.hasStaticModifier(member)
-                                && helpers.isPropTypesMember(member, sourceFile)
+                                ts.isGetAccessorDeclaration(member) &&
+                                helpers.hasStaticModifier(member) &&
+                                helpers.isPropTypesMember(member, sourceFile)
                             ) {
                                 return false;
                             }
                             return true;
                         }),
-                    )
+                    );
                 }
                 return node;
             }
-        }
-    }
+        };
+    };
 }

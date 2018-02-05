@@ -36,7 +36,9 @@ export type Factory = ts.TransformerFactory<ts.SourceFile>;
 export function reactStatelessFunctionMakePropsTransformFactoryFactory(typeChecker: ts.TypeChecker): Factory {
     return function reactStatelessFunctionMakePropsTransformFactory(context: ts.TransformationContext) {
         return function reactStatelessFunctionMakePropsTransform(sourceFile: ts.SourceFile) {
-            return visitSourceFile(sourceFile, typeChecker);
+            const visited = visitSourceFile(sourceFile, typeChecker);
+            ts.addEmitHelpers(visited, context.readEmitHelpers());
+            return visited;
         };
     };
 }
