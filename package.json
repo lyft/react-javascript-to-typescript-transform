@@ -1,6 +1,6 @@
 {
     "name": "react-js-to-ts",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "Convert React code from JavaScript to TypeScript",
     "main": "dist/index.js",
     "scripts": {
