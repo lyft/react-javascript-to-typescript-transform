@@ -4,6 +4,7 @@
 
 Transforms React code written in JavaScript to TypeScript.
 
+[**🖥 Download the VSCode Extension**](https://marketplace.visualstudio.com/items?itemName=mohsen1.react-javascript-to-typescript-transform-vscode)
 ## Features:
 
 * Proxies `PropTypes` to `React.Component` generic type and removes PropTypes
