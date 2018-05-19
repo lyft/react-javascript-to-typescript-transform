@@ -114,3 +114,15 @@ Pass `-t` with transform name and case name space separated to `npm test`
 ```
 npm test -- -t "react-js-make-props-and-state-transform propless-stateless"
 ```
+
+#### Using Visual Studio Code to debug tests
+
+To run all test run "Test All" from debug panel.
+
+##### Run a single test
+
+Edit `.vscode/launch.json` to add the same argument you pass to jest for your specific test.
+
+##### Breakpoints work with test 🎉
+
+Throw a breakpoint anywhere in code to stop the test there and inspect issue.
