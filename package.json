@@ -25,7 +25,7 @@
         "moduleFileExtensions": ["ts", "js"]
     },
     "lint-staged": {
-        "*.{js,json,css,md,ts,tsx}": ["npm run prettier", "git add"]
+        "*.{js,json,css,md,ts,tsx}": ["prettier --write", "git add"]
     },
     "bin": "dist/cli.js",
     "author": "Mohsen Azimi <me@azimi.me>",
