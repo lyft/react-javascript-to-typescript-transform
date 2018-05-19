@@ -27,11 +27,11 @@ export const allTransforms = [
     reactMovePropTypesToClassTransformFactoryFactory,
     reactJSMakePropsAndStateInterfaceTransformFactoryFactory,
     reactStatelessFunctionMakePropsTransformFactoryFactory,
+    removeDefaultExportVariableAssignmentTransformFactoryFactory,
     collapseIntersectionInterfacesTransformFactoryFactory,
     reactRemovePropTypesAssignmentTransformFactoryFactory,
     reactRemoveStaticPropTypesMemberTransformFactoryFactory,
     reactRemovePropTypesImportTransformFactoryFactory,
-    removeDefaultExportVariableAssignmentTransformFactoryFactory,
 ];
 
 export type TransformFactoryFactory = (typeChecker: ts.TypeChecker) => ts.TransformerFactory<ts.SourceFile>;
