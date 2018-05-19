@@ -2,28 +2,22 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "args": [],
-            "cwd": "${workspaceRoot}",
-            "env": {
-                "NODE_ENV": "test"
-            },
-            "console": "internalConsole",
-            "name": "Run Tests",
-            "outFiles": ["${workspaceRoot}/dist"],
-            "preLaunchTask": "tsc",
-            "program": "${workspaceRoot}/node_modules/.bin/jest",
+            "type": "node",
             "request": "launch",
-            "runtimeArgs": [],
-            "runtimeExecutable": null,
-            "sourceMaps": true,
-            "stopOnEntry": false,
-            "type": "node"
+            "name": "Jest All",
+            "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+            "args": ["--runInBand"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Attach",
             "type": "node",
-            "request": "attach",
-            "port": 5858
+            "request": "launch",
+            "name": "Jest A single case (edit config)",
+            "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+            "args": ["-t", "remove-default-export-variable-assignment-transform basic"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
         }
     ]
 }
