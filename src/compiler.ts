@@ -1,7 +1,7 @@
 import * as os from 'os';
 import * as fs from 'fs';
 import * as ts from 'typescript';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as _ from 'lodash';
 import * as prettier from 'prettier';
 import * as detectIndent from 'detect-indent';

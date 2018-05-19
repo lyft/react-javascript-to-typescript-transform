@@ -8,10 +8,10 @@ Transforms React code written in JavaScript to TypeScript.
 
 ## Features:
 
-* Proxies `PropTypes` to `React.Component` generic type and removes PropTypes
-* Provides state typing for `React.Component` based on initial state and `setState()` calls in the component
-* Hoist large interfaces for props and state out of `React.Component<P, S>` into declared types
-* Convert functional components with `PropTypes` property to TypeScript and uses propTypes to generate function type declaration
+*   Proxies `PropTypes` to `React.Component` generic type and removes PropTypes
+*   Provides state typing for `React.Component` based on initial state and `setState()` calls in the component
+*   Hoist large interfaces for props and state out of `React.Component<P, S>` into declared types
+*   Convert functional components with `PropTypes` property to TypeScript and uses propTypes to generate function type declaration
 
 ## Example
 
