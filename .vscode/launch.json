@@ -4,7 +4,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Jest All",
+            "name": "Test All",
             "program": "${workspaceFolder}/node_modules/jest/bin/jest",
             "args": ["--runInBand"],
             "console": "integratedTerminal",
@@ -13,9 +13,9 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Jest A single case (edit config)",
+            "name": "Test A single case (edit 'args' config first)",
             "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-            "args": ["-t", "remove-default-export-variable-assignment-transform basic"],
+            "args": ["-t", "end-to-end initial-state-and-proprypes-and-set-state"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
         }
