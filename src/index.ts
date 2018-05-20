@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
 import * as prettier from 'prettier';
 
-import { compile } from './compiler';
+import { compile, CompilationOptions, DEFAULT_COMPILATION_OPTIONS } from './compiler';
 import { reactJSMakePropsAndStateInterfaceTransformFactoryFactory } from './transforms/react-js-make-props-and-state-transform';
 import { reactRemovePropTypesAssignmentTransformFactoryFactory } from './transforms/react-remove-prop-types-assignment-transform';
 import { reactMovePropTypesToClassTransformFactoryFactory } from './transforms/react-move-prop-types-to-class-transform';
@@ -37,6 +37,10 @@ export type TransformFactoryFactory = (typeChecker: ts.TypeChecker) => ts.Transf
  * Run React JavaScript to TypeScript transform for file at `filePath`
  * @param filePath
  */
-export function run(filePath: string, prettierOptions: prettier.Options = {}): string {
-    return compile(filePath, allTransforms, prettierOptions);
+export function run(
+    filePath: string,
+    prettierOptions: prettier.Options = {},
+    compilationOptions: CompilationOptions = DEFAULT_COMPILATION_OPTIONS,
+): string {
+    return compile(filePath, allTransforms, prettierOptions, compilationOptions);
 }

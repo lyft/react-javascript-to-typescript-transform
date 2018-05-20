@@ -8,6 +8,16 @@ import * as detectIndent from 'detect-indent';
 
 import { TransformFactoryFactory } from '.';
 
+export interface CompilationOptions {
+    ignorePrettierErrors: boolean;
+}
+
+const DEFAULT_COMPILATION_OPTIONS: CompilationOptions = {
+    ignorePrettierErrors: false,
+};
+
+export { DEFAULT_COMPILATION_OPTIONS };
+
 /**
  * Compile and return result TypeScript
  * @param filePath Path to file to compile
@@ -16,6 +26,7 @@ export function compile(
     filePath: string,
     factoryFactories: TransformFactoryFactory[],
     incomingPrettierOptions: prettier.Options = {},
+    compilationOptions: CompilationOptions = DEFAULT_COMPILATION_OPTIONS,
 ) {
     const compilerOptions: ts.CompilerOptions = {
         target: ts.ScriptTarget.ES2017,
@@ -56,7 +67,16 @@ export function compile(
     const inputSource = fs.readFileSync(filePath, 'utf-8');
     const prettierOptions = getPrettierOptions(filePath, inputSource, incomingPrettierOptions);
 
-    return prettier.format(printed, incomingPrettierOptions);
+    try {
+        return prettier.format(printed, prettierOptions);
+    } catch (prettierError) {
+        if (compilationOptions.ignorePrettierErrors) {
+            console.warn(`Prettier failed for ${filePath} (ignorePrettierErrors is on):`);
+            console.warn(prettierError);
+            return printed;
+        }
+        throw prettierError;
+    }
 }
 
 /**
@@ -76,7 +96,7 @@ export function getPrettierOptions(filePath: string, source: string, options: pr
     const semi = getUseOfSemi(source);
     const quotations = getQuotation(source);
 
-    _.defaults(options, {
+    _.defaults(Object.assign({}, options), {
         tabWidth: indentAmount,
         useTabs: indentType && indentType === 'tab',
         printWidth: sourceWidth,

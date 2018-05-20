@@ -7,6 +7,28 @@ import * as path from 'path';
 import * as prettier from 'prettier';
 
 import { run } from '.';
+import { CompilationOptions } from './compiler';
+
+function resolveGlobs(globPatterns: string[]): string[] {
+    const files: string[] = [];
+    function addFile(file: string) {
+        file = path.resolve(file);
+        if (files.indexOf(file) === -1) {
+            files.push(file);
+        }
+    }
+    globPatterns.forEach(pattern => {
+        if (/[{}*?+\[\]]/.test(pattern)) {
+            // Smells like globs
+            glob.sync(pattern, {}).forEach(file => {
+                addFile(file);
+            });
+        } else {
+            addFile(pattern);
+        }
+    });
+    return files;
+}
 
 program
     .version('1.0.0')
@@ -20,37 +42,56 @@ program
     .option('--tab-width <int>', 'Number of spaces per indentation level.', 2)
     .option('--trailing-comma <none|es5|all>', 'Print trailing commas wherever possible when multi-line.', 'none')
     .option('--use-tabs', 'Indent with tabs instead of spaces.', false)
+    .option('--ignore-prettier-errors', 'Ignore (but warn about) errors in Prettier', false)
+    .option('--keep-original-files', 'Keep original files', false)
+    .option('--keep-temporary-files', 'Keep temporary files', false)
     .usage('[options] <filename or glob>')
-    .command('* <glob>')
-    .action(globPattern => {
-        if (!globPattern) {
-            throw new Error('You must provide a file name or glob pattern to transform');
+    .command('* [glob/filename...]')
+    .action((globPatterns: string[]) => {
+        const prettierOptions: prettier.Options = {
+            arrowParens: program.arrowParens,
+            bracketSpacing: !program.noBracketSpacing,
+            jsxBracketSameLine: !!program.jsxBracketSameLine,
+            printWidth: parseInt(program.printWidth, 10),
+            proseWrap: program.proseWrap,
+            semi: !program.noSemi,
+            singleQuote: !!program.singleQuote,
+            tabWidth: parseInt(program.tabWidth, 10),
+            trailingComma: program.trailingComma,
+            useTabs: !!program.useTabs,
+        };
+        const compilationOptions: CompilationOptions = {
+            ignorePrettierErrors: !!program.ignorePrettierErrors,
+        };
+        const files = resolveGlobs(globPatterns);
+        if (!files.length) {
+            throw new Error('Nothing to do. You must provide file names or glob patterns to transform.');
         }
-        const files = glob.sync(globPattern, {});
-        for (const file of files) {
-            const filePath = path.resolve(file);
+        let errors = false;
+        for (const filePath of files) {
+            console.log(`Transforming ${filePath}...`);
             const newPath = filePath.replace(/\.jsx?$/, '.tsx');
-
+            const temporaryPath = filePath.replace(/\.jsx?$/, `_js2ts_${+new Date()}.tsx`);
             try {
-                fs.renameSync(filePath, newPath);
-                const prettierOptions: prettier.Options = {
-                    arrowParens: program.arrowParens,
-                    bracketSpacing: !program.noBracketSpacing,
-                    jsxBracketSameLine: !!program.jsxBracketSameLine,
-                    printWidth: parseInt(program.printWidth, 10),
-                    proseWrap: program.proseWrap,
-                    semi: !program.noSemi,
-                    singleQuote: !!program.singleQuote,
-                    tabWidth: parseInt(program.tabWidth, 10),
-                    trailingComma: program.trailingComma,
-                    useTabs: !!program.useTabs,
-                };
-                const result = run(newPath, prettierOptions);
+                fs.copyFileSync(filePath, temporaryPath);
+                const result = run(temporaryPath, prettierOptions, compilationOptions);
                 fs.writeFileSync(newPath, result);
+                if (!program.keepOriginalFiles) {
+                    fs.unlinkSync(filePath);
+                }
             } catch (error) {
-                console.warn(`Failed to convert ${file}`);
+                console.warn(`Failed to convert ${filePath}`);
                 console.warn(error);
+                errors = true;
             }
+            if (!program.keepTemporaryFiles) {
+                if (fs.existsSync(temporaryPath)) {
+                    fs.unlinkSync(temporaryPath);
+                }
+            }
+        }
+        if (errors) {
+            process.exit(1);
         }
     });
 
